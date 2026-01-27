@@ -1,27 +1,51 @@
-import type { CreateDocumentInput } from "../contracts/CreateDocumentInput.js";
-import type { DocumentState } from "../contracts/DocumentState.js";
+import type { IDocumentService } from "../contracts/services/IDocumentService.js";
+import { DocStatusType } from "../contracts/states/document.js";
+import type {
+  CreateDocumentCommand,
+  GetDocumentCommand,
+  SearchDocumentCommand,
+  DocumentState,
+} from "../contracts/states/document.js";
 
-export class DocumentService{
-    private documents :DocumentState[] = [];
-    private idCounter = 1;
+export class DocumentService implements IDocumentService {
+  private documents: DocumentState[] = [];
+  private idCounter = 1;
 
-    async createDocument(input:CreateDocumentInput): Promise<DocumentState>{
-        const now = new Date();
-        
-        const doc :DocumentState ={
-            id:this.idCounter++,// autoincrementing
-            title:input.title,
-            type:input.type,
-            status:"active",
-            createdAt: now,
-            updatedAt:now,
-        }
+  async createDocument(command: CreateDocumentCommand): Promise<DocumentState> {
+    const now = new Date();
 
-        this.documents.push(doc);
-        return doc;
+    const doc: DocumentState = {
+      id: this.idCounter++,
+      title: command.title,
+      type: command.type,
+      status: DocStatusType.DRAFT,
+      active: true,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    this.documents.push(doc);
+    return doc;
+  }
+
+  async getDocument(command: GetDocumentCommand): Promise<DocumentState> {
+    const doc = this.documents.find((d) => d.id === command.id);
+    if (!doc) throw new Error("Document not found");
+    return doc;
+  }
+
+  async searchDocument(
+    command: SearchDocumentCommand,
+  ): Promise<DocumentState[]> {
+    let result = [...this.documents];
+
+    if (command.title !== undefined) {
+      result = result.filter((d) =>
+        d.title.toLowerCase().includes(command.title!.toLowerCase()),
+      );
     }
 
-    async getDocument(id:number):Promise<DocumentState| null>{
-        return this.documents.find((doc)=> doc.id === id) || null;
-    }
+    return result.slice(command.offset, command.offset + command.limit);
+  }
+
 }

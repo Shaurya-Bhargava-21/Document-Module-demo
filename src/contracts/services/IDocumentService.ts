@@ -1,9 +1,13 @@
-import type { CreateDocumentCommand } from "../states/document";
+import type {
+  CreateDocumentCommand,
+  GetDocumentCommand,
+  SearchDocumentCommand,
+  DocumentState,
+} from "../states/document.js";
 
-
-export interface IDocumentService{
-    createDocument(command:CreateDocumentCommand):Promise<Document>;
-    getDocument(command:GetDocumentCommand):Promise<Document>;
-    searchDocument(command:SearchDocumentCommand):Promise<Document[]>;
+export interface IDocumentService {
+  createDocument(command: CreateDocumentCommand): Promise<DocumentState>;
+  getDocument(command: GetDocumentCommand): Promise<DocumentState>;
+  searchDocument(command: SearchDocumentCommand): Promise<DocumentState[]>;
 }
 // ex - parseStringToDate

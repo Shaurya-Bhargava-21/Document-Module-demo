@@ -1,3 +1,44 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+// src/index.ts
+import { DocumentService } from "./services/DocumentService.js";
+import { DocType, DocStatusType } from "./contracts/states/document.js";
+async function main() {
+    const documentService = new DocumentService();
+    const doc1 = await documentService.createDocument({
+        title: "Backend Notes",
+        type: DocType.PDF,
+    });
+    const doc2 = await documentService.createDocument({
+        title: "Interview Prep",
+        type: DocType.TXT,
+    });
+    console.log("Created documents:");
+    console.log(doc1);
+    console.log(doc2);
+    const fetched = await documentService.getDocument({ id: doc1.id }); // getting document by ID
+    console.log("\nFetched document:");
+    console.log(fetched);
+    const searchResult = await documentService.searchDocument({
+        title: "backend",
+        limit: 10,
+        offset: 0,
+    });
+    console.log("\nSearch result:");
+    console.log(searchResult);
+    const typeResult = await documentService.searchDocument({
+        type: DocType.PDF,
+        limit: 10,
+        offset: 0,
+    });
+    console.log("\nSearch by type:");
+    console.log(typeResult);
+    documentService.clearDocuments();
+    const remaining = await documentService.searchDocument({
+        limit: 100,
+        offset: 0,
+    });
+    if (remaining.length === 0) {
+        console.log("No documents are left.");
+    }
+}
+main().catch(console.error);
 //# sourceMappingURL=index.js.map

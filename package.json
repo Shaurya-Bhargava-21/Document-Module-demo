@@ -1,17 +1,27 @@
 {
   "name": "document_module",
   "version": "1.0.0",
-  "description": "",
+  "description": "// to create new version of the document with new content",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev":"node src/index.ts"
+    "dev": "node src/index.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": "^25.0.10",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shaurya-Bhargava-21/Document-Module-demo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Shaurya-Bhargava-21/Document-Module-demo/issues"
+  },
+  "homepage": "https://github.com/Shaurya-Bhargava-21/Document-Module-demo#readme"
 }
