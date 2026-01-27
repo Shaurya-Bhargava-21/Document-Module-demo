@@ -28,7 +28,7 @@ export interface GetDocumentCommand{ // to fetch one specific document by id
 }
 
 export interface SearchDocumentCommand { // to find many documents
-  title?: string; // search by title (partial match)
+  query?: string; // search by title (partial match)
   type?: DocType; // filter by document type
   status?: DocStatusType; // filter by document status
   active?: boolean; // filter active / inactive documents

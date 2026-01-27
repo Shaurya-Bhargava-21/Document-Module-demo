@@ -39,9 +39,9 @@ export class DocumentService implements IDocumentService {
   ): Promise<DocumentState[]> {
     let result = [...this.documents];
 
-    if (command.title !== undefined) {
+    if (command.query !== undefined) {
       result = result.filter((d) =>
-        d.title.toLowerCase().includes(command.title!.toLowerCase()),
+        d.title.toLowerCase().includes(command.query!.toLowerCase()),
       );
     }
 

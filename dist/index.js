@@ -1,6 +1,6 @@
 // src/index.ts
 import { DocumentService } from "./services/DocumentService.js";
-import { DocType, DocStatusType } from "./contracts/states/document.js";
+import { DocType } from "./contracts/states/document.js";
 async function main() {
     const documentService = new DocumentService();
     const doc1 = await documentService.createDocument({
@@ -18,7 +18,7 @@ async function main() {
     console.log("\nFetched document:");
     console.log(fetched);
     const searchResult = await documentService.searchDocument({
-        title: "backend",
+        query: "backend",
         limit: 10,
         offset: 0,
     });
@@ -31,14 +31,6 @@ async function main() {
     });
     console.log("\nSearch by type:");
     console.log(typeResult);
-    documentService.clearDocuments();
-    const remaining = await documentService.searchDocument({
-        limit: 100,
-        offset: 0,
-    });
-    if (remaining.length === 0) {
-        console.log("No documents are left.");
-    }
 }
 main().catch(console.error);
 //# sourceMappingURL=index.js.map

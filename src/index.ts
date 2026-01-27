@@ -23,8 +23,8 @@ async function main() {
   console.log("\nFetched document:");
   console.log(fetched);
 
-  const searchResult = await documentService.searchDocument({ // searching document by one of the filers -> " title"
-    title: "backend",
+  const searchResult = await documentService.searchDocument({ // searching document by one of the filters -> " query"
+    query: "backend",
     limit: 10,
     offset: 0,
   });

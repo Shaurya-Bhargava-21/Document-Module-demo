@@ -6,6 +6,5 @@ export declare class DocumentService implements IDocumentService {
     createDocument(command: CreateDocumentCommand): Promise<DocumentState>;
     getDocument(command: GetDocumentCommand): Promise<DocumentState>;
     searchDocument(command: SearchDocumentCommand): Promise<DocumentState[]>;
-    clearDocuments(): void;
 }
 //# sourceMappingURL=DocumentService.d.ts.map

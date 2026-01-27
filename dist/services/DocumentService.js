@@ -24,14 +24,10 @@ export class DocumentService {
     }
     async searchDocument(command) {
         let result = [...this.documents];
-        if (command.title !== undefined) {
-            result = result.filter((d) => d.title.toLowerCase().includes(command.title.toLowerCase()));
+        if (command.query !== undefined) {
+            result = result.filter((d) => d.title.toLowerCase().includes(command.query.toLowerCase()));
         }
         return result.slice(command.offset, command.offset + command.limit);
-    }
-    clearDocuments() {
-        this.documents = [];
-        this.idCounter = 1;
     }
 }
 //# sourceMappingURL=DocumentService.js.map

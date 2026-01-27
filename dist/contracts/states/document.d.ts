@@ -25,7 +25,7 @@ export interface GetDocumentCommand {
     id: number;
 }
 export interface SearchDocumentCommand {
-    title?: string;
+    query?: string;
     type?: DocType;
     status?: DocStatusType;
     active?: boolean;
