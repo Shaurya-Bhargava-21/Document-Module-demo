@@ -1,0 +1,1 @@
+{"version":3,"file":"DocumentVersionEntity.d.ts","sourceRoot":"","sources":["../../../src/persistence/entities/DocumentVersionEntity.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,cAAc,EAAE,MAAM,qBAAqB,CAAC;AAErD,qBACa,qBAAqB;IAG9B,EAAE,EAAE,MAAM,CAAC;IAGX,OAAO,EAAE,MAAM,CAAC;IAGhB,OAAO,EAAE,MAAM,CAAC;IAGhB,SAAS,EAAE,IAAI,CAAC;IAGhB,QAAQ,EAAC,cAAc,CAAA;CAC1B"}

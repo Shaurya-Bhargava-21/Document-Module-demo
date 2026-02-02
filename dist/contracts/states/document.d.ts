@@ -17,6 +17,13 @@ export interface DocumentState {
     createdAt: Date;
     updatedAt: Date;
 }
+export interface DocumentVersionState {
+    id: number;
+    documentId: number;
+    version: number;
+    content: string;
+    createdAt: Date;
+}
 export interface CreateDocumentCommand {
     title: string;
     type: DocType;

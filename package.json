@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node src/index.ts"
+    "dev": "nodemon --exec tsx ./src/index.ts"
   },
   "keywords": [],
   "author": "",
@@ -23,5 +23,13 @@
   "bugs": {
     "url": "https://github.com/Shaurya-Bhargava-21/Document-Module-demo/issues"
   },
-  "homepage": "https://github.com/Shaurya-Bhargava-21/Document-Module-demo#readme"
+  "homepage": "https://github.com/Shaurya-Bhargava-21/Document-Module-demo#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "nodemon": "^3.1.11",
+    "pg": "^8.17.2",
+    "reflect-metadata": "^0.2.2",
+    "tsx": "^4.21.0",
+    "typeorm": "^0.3.28"
+  }
 }

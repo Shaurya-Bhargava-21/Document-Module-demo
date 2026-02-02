@@ -17,6 +17,15 @@ export interface DocumentState {
   active: boolean;
   createdAt: Date;
   updatedAt: Date;
+  versions?:DocumentVersionState[];
+}
+
+export interface DocumentVersionState{
+  id:number;
+  documentId:number;
+  version:number;
+  content:string;
+  createdAt:Date;
 }
 
 export interface CreateDocumentCommand {
@@ -35,6 +44,43 @@ export interface SearchDocumentCommand { // to find many documents
   limit: number; // max number of documents to return
   offset: number; // starting index
 }
+
+export interface SearchDocumentsResult {
+  documents: DocumentState[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface AddVersionCommand {
+  documentId: number;
+  version: number;
+  content: string;
+}
+
+export interface ListVersionCommand {
+  documentId: number;
+}
+
+export interface ArchiveDocumentCommand {
+  documentId: number;
+}
+
+export interface ServiceError {
+  code: string;
+  message: string;
+  details?: unknown;
+}
+
+export interface UpdateDocumentCommand {
+  documentId: number; // which document to update
+  title?: string; // optional, update only if provided
+  status?: DocStatusType;
+  active?: boolean;
+}
+
+
+
 
 
 // finish all the commands required for documentservice
