@@ -5,7 +5,7 @@ import { DocumentEntity } from "./DocumentEntity.js";
 @Entity("documentversions")
 export class DocumentVersionEntity{
 
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn("uuid")
     id: number;
 
     @Column({type:'numeric'})

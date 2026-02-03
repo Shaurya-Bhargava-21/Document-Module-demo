@@ -54,6 +54,11 @@ export interface SearchDocumentsResult {
 
 export interface AddVersionCommand {
   documentId: number;
+  content: string;
+}
+
+export interface AddVersionRepoCommand {
+  documentId: number;
   version: number;
   content: string;
 }
@@ -78,9 +83,6 @@ export interface UpdateDocumentCommand {
   status?: DocStatusType;
   active?: boolean;
 }
-
-
-
-
+ 
 
 // finish all the commands required for documentservice

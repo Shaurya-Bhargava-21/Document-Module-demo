@@ -3,7 +3,7 @@ import type { IDocumentVersionRepository } from "../contracts/repos/IDocumentVer
 import { DocumentVersionEntity } from "../persistence/entities/DocumentVersionEntity.js";
 import { AppDataSource } from "../persistence/data-source.js";
 import type {
-  AddVersionCommand,
+  AddVersionRepoCommand,
   DocumentVersionState,
   ListVersionCommand,
 } from "../contracts/states/document.js";
@@ -18,14 +18,14 @@ export class TypeOrmDocVersionRepo implements IDocumentVersionRepository {
   private toState(entity: DocumentVersionEntity): DocumentVersionState {
     return {
       id: entity.id,
-      documentId: entity.document.id,
+      documentId: entity.document.id, 
       version: entity.version,
       content: entity.content,
       createdAt: entity.createdAt,
     };
   }
 
-  async addVersion(command: AddVersionCommand): Promise<DocumentVersionState> {
+  async addVersion(command: AddVersionRepoCommand): Promise<DocumentVersionState> {
     const entity = this.repo.create({
       version: command.version,
       content: command.content,
@@ -48,16 +48,18 @@ export class TypeOrmDocVersionRepo implements IDocumentVersionRepository {
   async listVersions(
     command: ListVersionCommand,
   ): Promise<DocumentVersionState[]> {
-    const entities: DocumentVersionEntity[] = await this.repo.find({
-      where: { document: { id: command.documentId } },
-      relations: ["document"],
-      order: { version: "ASC" },
-    });
+    const entities = await this.repo
+      .createQueryBuilder("v")
+      .leftJoinAndSelect("v.document", "d")
+      .where("d.id = :documentId", { documentId: command.documentId })
+      .orderBy("v.version", "ASC")
+      .getMany();
+
     return entities.map((entity) => ({
       id: entity.id,
       documentId: entity.document.id,
       version: entity.version,
-      content: entity.content, 
+      content: entity.content,
       createdAt: entity.createdAt,
     }));
   }

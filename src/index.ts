@@ -1,42 +1,76 @@
-// src/index.ts
 import { DocumentService } from "./services/DocumentService.js";
 import { DocType } from "./contracts/states/document.js";
 import { AppDataSource } from "./persistence/data-source.js";
-import { DocumentEntity } from "./persistence/entities/DocumentEntity.js";
 import { TypeOrmDocRepo } from "./repos/TypeOrmDocRepo.js";
 import { TypeOrmDocVersionRepo } from "./repos/TypeOrmDocVersionRepo.js";
 
-AppDataSource.initialize()
-  .then(async () => {
-    console.log("Database connected");
-    const documentRepo = new TypeOrmDocRepo();
-    const versionRepo = new TypeOrmDocVersionRepo()
-    const documentService = new DocumentService(documentRepo, versionRepo);
+async function main() {
+  await AppDataSource.initialize();
+  console.log(" Database connected");
 
-    const doc = await documentService.createDocument({
-      title:"my First doc",
-      type:DocType.PDF
-    })
+  const documentRepo = new TypeOrmDocRepo();
+  const versionRepo = new TypeOrmDocVersionRepo();
+  const documentService = new DocumentService(documentRepo, versionRepo);
 
-    console.log("created :",doc);
-
-    const fetched = await documentService.getDocument({ id: doc.id });
-    console.log("Fetched:", fetched);
-
-    // SEARCH
-    const results = await documentService.searchDocument({
-      query: "First",
-      limit: 10,
-      offset: 0,
-    });
-
-    console.log("Search:", results);
-
-    
-  })
-  .catch((err) => {
-    console.error("Error during Data Source initialization", err);
+  const createdDoc = await documentService.createDocument({
+    title: "My First Document",
+    type: DocType.PDF,
   });
+
+  console.log("Created document:", createdDoc);
+
+  const fetchedDoc = await documentService.getDocument({
+    id: createdDoc.id,
+  });
+
+  console.log("Fetched document:", fetchedDoc);
+
+  const searchResults = await documentService.searchDocument({
+    query: "First",
+    limit: 10,
+    offset: 0,
+  });
+
+  console.log("Search results:", searchResults);
+
+  const version1 = await documentService.addVersion({
+    documentId: createdDoc.id,
+    content: "Initial draft content",
+  });
+
+  console.log(" Added version 1:", version1);
+
+  const version2 = await documentService.addVersion({
+    documentId: createdDoc.id,
+    content: "Second draft content",
+  });
+
+  console.log(" Added version 2:", version2);
+
+  const versions = await documentService.listVersion({
+    documentId: createdDoc.id,
+  });
+
+  console.log(" All versions:", versions);
+
+  await documentService.archiveDocument({
+    documentId: createdDoc.id,
+  });
+
+  console.log(" Document archived");
+
+  const archivedDoc = await documentService.getDocument({
+    id: createdDoc.id,
+  });
+
+  console.log(" Archived document state:", archivedDoc);
+}
+
+main().catch((err) => {
+  console.error("Error:", err);
+});
+
+// original code for future reference
 // async function main() {
 //   const documentService = new DocumentService();
 

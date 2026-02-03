@@ -34,8 +34,6 @@ export class TypeOrmDocRepo implements IDocumentRepository {
     const entity = this.repo.create({
       title: command.title,
       type: command.type,
-      status: DocStatusType.DRAFT,
-      active: true,
     });
 
     const saved = await this.repo.save(entity);

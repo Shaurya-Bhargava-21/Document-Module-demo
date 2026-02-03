@@ -4,7 +4,7 @@ import { DocumentVersionEntity } from "./DocumentVersionEntity.js";
 
 @Entity("documents")
 export class DocumentEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn("uuid")
   id: number;
 
   @Column("varchar")
@@ -13,10 +13,10 @@ export class DocumentEntity {
   @Column({ type: "enum", enum: DocType })
   type: DocType;
 
-  @Column({ type: "enum", enum: DocStatusType})
+  @Column({ type: "enum", enum: DocStatusType , default:DocStatusType.PUBLISHED})
   status: DocStatusType;
 
-  @Column({type:'boolean'})
+  @Column({type:'boolean',default:true})
   active: boolean;
 
   @CreateDateColumn()
