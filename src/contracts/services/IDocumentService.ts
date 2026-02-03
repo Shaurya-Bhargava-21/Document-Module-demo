@@ -7,6 +7,7 @@ import type {
   DocumentVersionState,
   ListVersionCommand,
   ArchiveDocumentCommand,
+  SoftDeleteDocumentCommand,
 } from "../states/document.js";
 
 export interface IDocumentService {
@@ -16,12 +17,7 @@ export interface IDocumentService {
   addVersion(command:AddVersionCommand):Promise<DocumentVersionState>;
   listVersion(command:ListVersionCommand):Promise<DocumentVersionState[]>;
   archiveDocument(command:ArchiveDocumentCommand):Promise<void>;
+  softDeleteDocument(command:SoftDeleteDocumentCommand):Promise<void>;
 }
 // ex - parseStringToDate
 
-// Service methods
-
-
-
-	// •	archiveDocument(id)
-	// •	softDeleteDocument(id)

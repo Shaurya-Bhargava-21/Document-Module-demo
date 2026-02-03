@@ -7,6 +7,7 @@ export enum DocType {
 export enum DocStatusType {
   DRAFT = "DRAFT",
   PUBLISHED = "PUBLISHED",
+  DELETED = "DELETED"
 }
 
 export interface DocumentState {
@@ -83,6 +84,9 @@ export interface UpdateDocumentCommand {
   status?: DocStatusType;
   active?: boolean;
 }
- 
+
+export interface SoftDeleteDocumentCommand {
+  documentId:number;
+}
 
 // finish all the commands required for documentservice

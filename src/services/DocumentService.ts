@@ -11,6 +11,8 @@ import {
   type DocumentVersionState,
   type ListVersionCommand,
   type ArchiveDocumentCommand,
+  DocStatusType,
+  type SoftDeleteDocumentCommand,
 } from "../contracts/states/document.js";
 
 export class DocumentService implements IDocumentService {
@@ -40,6 +42,13 @@ export class DocumentService implements IDocumentService {
     if (!doc) {
       throw new Error("Document not found");
     }
+
+    if(!doc.active){
+      throw new Error("Cannot add version to archived document");
+    }
+    if(doc.status === DocStatusType.DELETED){
+      throw new Error("Cannot add version to a deleted document");
+    }
     const versions = await this.versionRepo.listVersions({
       documentId: command.documentId,
     });
@@ -64,6 +73,15 @@ export class DocumentService implements IDocumentService {
   async archiveDocument(command: ArchiveDocumentCommand): Promise<void> {
     await this.documentRepo.archive(command);
   }
+
+  async softDeleteDocument(command: SoftDeleteDocumentCommand): Promise<void> {
+    const doc = await this.documentRepo.getById({id:command.documentId});
+    if(!doc){
+      throw new Error("Document not found");
+    }
+    await this.documentRepo.softDelete(command)
+  }
+
 }
 
 // export class DocumentService implements IDocumentService {

@@ -64,6 +64,72 @@ async function main() {
   });
 
   console.log(" Archived document state:", archivedDoc);
+
+  // Trying to add version to archived document (should fail)
+  try {
+    await documentService.addVersion({
+      documentId: createdDoc.id,
+      content: "This should fail - archived doc",
+    });
+  } catch (err: any) {
+    console.log(" Expected error (archived):", err.message);
+  }
+
+  // Soft delete document
+  await documentService.softDeleteDocument({
+    documentId: createdDoc.id,
+  });
+  console.log("Document soft deleted");
+
+  // Try to get soft deleted document (should return null)
+  try {
+    await documentService.getDocument({
+      id: createdDoc.id,
+    });
+    console.log(" TEST FAILED: Should not find deleted document");
+  } catch (err: any) {
+    console.log("Expected error (deleted):", err.message);
+  }
+
+  //Search should not include deleted documents
+  const searchAfterDelete = await documentService.searchDocument({
+    query: "First",
+    limit: 10,
+    offset: 0,
+  });
+  console.log("Search after delete (should be empty):", searchAfterDelete);
+
+  // Create another document to test soft delete flow
+  const doc2 = await documentService.createDocument({
+    title: "Second Document",
+    type: DocType.TXT,
+  });
+  console.log("Created second document:", doc2);
+
+  // Add a version to second document
+  await documentService.addVersion({
+    documentId: doc2.id,
+    content: "Version 1 of second doc",
+  });
+  console.log("Added version to second document");
+
+  //Soft delete without archiving first
+  await documentService.softDeleteDocument({
+    documentId: doc2.id,
+  });
+  console.log("Second document soft deleted directly");
+
+  //Try to add version to soft deleted document (should fail)
+  try {
+    await documentService.addVersion({
+      documentId: doc2.id,
+      content: "This should fail - deleted doc",
+    });
+  } catch (err: any) {
+    console.log("Expected error (deleted):", err.message);
+  }
+
+  console.log("\n All tests completed successfully!");
 }
 
 main().catch((err) => {

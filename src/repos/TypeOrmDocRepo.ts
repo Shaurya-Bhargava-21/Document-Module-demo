@@ -1,4 +1,4 @@
-import { Repository } from "typeorm";
+import { Not, Repository } from "typeorm";
 import { AppDataSource } from "../persistence/data-source.js";
 import { DocumentEntity } from "../persistence/entities/DocumentEntity.js";
 import {
@@ -8,6 +8,7 @@ import {
   type DocumentState,
   type GetDocumentCommand,
   type SearchDocumentCommand,
+  type SoftDeleteDocumentCommand,
   type UpdateDocumentCommand,
 } from "../contracts/states/document.js";
 import type { IDocumentRepository } from "../contracts/repos/IDocumentRepository.js";
@@ -40,11 +41,18 @@ export class TypeOrmDocRepo implements IDocumentRepository {
     return this.toState(saved);
   }
   async getById(command: GetDocumentCommand): Promise<DocumentState | null> {
-    const doc = await this.repo.findOne({ where: { id: command.id } });
+    const doc = await this.repo.findOne({ where: { 
+      id: command.id ,
+      status: Not(DocStatusType.DELETED)
+    } });
     return doc ? this.toState(doc) : null;
   }
   async search(command: SearchDocumentCommand): Promise<DocumentState[]> {
     const qb = this.repo.createQueryBuilder("d");
+
+    qb.where("d.status != :deletedStatus",{
+      deletedStatus: DocStatusType.DELETED
+    })
 
     if (command.query) {
       qb.andWhere("d.title ILIKE :q", {
@@ -80,6 +88,17 @@ export class TypeOrmDocRepo implements IDocumentRepository {
 
     doc.active = false; // mark as archived
     doc.status = DocStatusType.DRAFT; // optional: reset status
+    await this.repo.save(doc);
+  }
+
+  async softDelete(command: SoftDeleteDocumentCommand): Promise<void> {
+    const doc = await this.repo.findOne({where:{id:command.documentId}})
+
+    if(!doc) throw new Error("Document not found");
+
+    doc.status = DocStatusType.DELETED
+    doc.active = false;
+
     await this.repo.save(doc);
   }
 }

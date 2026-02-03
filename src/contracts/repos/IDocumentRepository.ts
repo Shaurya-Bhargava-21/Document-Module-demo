@@ -4,6 +4,7 @@ import type {
   DocumentState,
   GetDocumentCommand,
   SearchDocumentCommand,
+  SoftDeleteDocumentCommand,
   UpdateDocumentCommand,
 } from "../states/document.js";
 
@@ -18,4 +19,5 @@ export interface IDocumentRepository {
   search(command: SearchDocumentCommand): Promise<DocumentState[]>;
   update(command: UpdateDocumentCommand): Promise<void>;
   archive(command: ArchiveDocumentCommand): Promise<void>;
+  softDelete(command:SoftDeleteDocumentCommand):Promise<void>;
 }
