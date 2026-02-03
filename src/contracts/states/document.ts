@@ -45,12 +45,12 @@ export interface SearchDocumentCommand { // to find many documents
   offset: number; // starting index
 }
 
-export interface SearchDocumentsResult {
-  documents: DocumentState[];
-  total: number;
-  limit: number;
-  offset: number;
-}
+// export interface SearchDocumentsResult {
+//   documents: DocumentState[];
+//   total: number;
+//   limit: number;
+//   offset: number;
+// }
 
 export interface AddVersionCommand {
   documentId: number;
@@ -71,11 +71,11 @@ export interface ArchiveDocumentCommand {
   documentId: number;
 }
 
-export interface ServiceError {
-  code: string;
-  message: string;
-  details?: unknown;
-}
+// export interface ServiceError {
+//   code: string;
+//   message: string;
+//   details?: unknown;
+// }
 
 export interface UpdateDocumentCommand {
   documentId: number; // which document to update
