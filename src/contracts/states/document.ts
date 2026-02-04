@@ -11,7 +11,7 @@ export enum DocStatusType {
 }
 
 export interface DocumentState {
-  id: number;
+  id: string;
   title: string;
   type: DocType;
   status: DocStatusType;
@@ -22,8 +22,8 @@ export interface DocumentState {
 }
 
 export interface DocumentVersionState{
-  id:number;
-  documentId:number;
+  id:string;
+  documentId:string;
   version:number;
   content:string;
   createdAt:Date;
@@ -34,7 +34,7 @@ export interface CreateDocumentCommand {
   type: DocType;
 }
 export interface GetDocumentCommand{ // to fetch one specific document by id
-  id:number;
+  id:string;
 }
 
 export interface SearchDocumentCommand { // to find many documents
@@ -54,22 +54,22 @@ export interface SearchDocumentCommand { // to find many documents
 // }
 
 export interface AddVersionCommand {
-  documentId: number;
+  documentId: string;
   content: string;
 }
 
 export interface AddVersionRepoCommand {
-  documentId: number;
+  documentId: string;
   version: number;
   content: string;
 }
 
 export interface ListVersionCommand {
-  documentId: number;
+  documentId: string;
 }
 
 export interface ArchiveDocumentCommand {
-  documentId: number;
+  documentId: string;
 }
 
 // export interface ServiceError {
@@ -79,14 +79,14 @@ export interface ArchiveDocumentCommand {
 // }
 
 export interface UpdateDocumentCommand {
-  documentId: number; // which document to update
+  documentId: string; // which document to update
   title?: string; // optional, update only if provided
   status?: DocStatusType;
   active?: boolean;
 }
 
 export interface SoftDeleteDocumentCommand {
-  documentId:number;
+  documentId:string;
 }
 
 // finish all the commands required for documentservice
