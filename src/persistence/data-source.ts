@@ -11,7 +11,9 @@ export const AppDataSource = new DataSource({
   username: "admin",
   password: "admin123",
   database: "mydb",
-  synchronize: true,
-  logging: true,
+  synchronize: false,
+  logging: true,     
   entities: [DocumentEntity,DocumentVersionEntity],
+  migrations: ["src/persistence/migrations/*.ts"],
+  migrationsTableName: "migrations_history"
 });

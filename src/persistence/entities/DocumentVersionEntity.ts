@@ -1,4 +1,4 @@
-import { CreateDateColumn, Entity,Column ,PrimaryGeneratedColumn, UpdateDateColumn, OneToMany, ManyToOne } from "typeorm";
+import { CreateDateColumn, Entity,Column ,PrimaryGeneratedColumn, UpdateDateColumn, OneToMany, ManyToOne, type Relation } from "typeorm";
 import type { DocStatusType, DocType } from "../../contracts/states/document.js";
 import { DocumentEntity } from "./DocumentEntity.js";
 
@@ -18,5 +18,6 @@ export class DocumentVersionEntity{
     createdAt: Date;
 
     @ManyToOne(()=>DocumentEntity,(doc)=>doc.versions)
-    document:DocumentEntity
+    // @ManyToOne("DocumentEntity",)
+    document:Relation<DocumentEntity>;
 }
