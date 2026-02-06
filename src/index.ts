@@ -3,6 +3,7 @@ import { DocType } from "./contracts/states/document.js";
 import { AppDataSource } from "./persistence/data-source.js";
 import { TypeOrmDocRepo } from "./repos/TypeOrmDocRepo.js";
 import { TypeOrmDocVersionRepo } from "./repos/TypeOrmDocVersionRepo.js";
+import { InMemoryDocService } from "./services/InMemoryDocService.js";
 
 async function main() {
   await AppDataSource.initialize();
@@ -11,6 +12,37 @@ async function main() {
   const documentRepo = new TypeOrmDocRepo();
   const versionRepo = new TypeOrmDocVersionRepo();
   const documentService = new DocumentService(documentRepo, versionRepo);
+  const memoryService = new InMemoryDocService();
+
+  const memoryDoc = await memoryService.createDocument({
+    title: "My First Document",
+    type: DocType.PDF,
+  });
+
+  console.log("Created document:", memoryDoc);
+
+  const mversion1 = await memoryService.addVersion({
+    documentId: memoryDoc.id,
+    content: "Initial content",
+  });
+
+  console.log("Added version:", mversion1);
+
+  const mversion2 = await memoryService.addVersion({
+    documentId: memoryDoc.id,
+    content: "Updated content",
+  });
+
+  console.log("Added version:", mversion2);
+
+  const inmemoryversions = await memoryService.listVersion({
+    documentId: memoryDoc.id,
+  });
+
+  console.log("All versions:", inmemoryversions);
+
+  const fetched = await memoryService.getDocument({ id: memoryDoc.id });
+  console.log("Fetched document:", fetched);
 
   //  Test 1: Valid input
   console.log("\n Test 1: Creating document with valid input...");
@@ -181,46 +213,3 @@ main().catch((err) => {
   console.error("Error:", err);
 });
 
-// original code for future reference
-// async function main() {
-//   const documentService = new DocumentService();
-
-//   const doc1 = await documentService.createDocument({
-//     title: "Backend Notes",
-//     type: DocType.PDF,
-//   });
-
-//   const doc2 = await documentService.createDocument({
-//     title: "Interview Prep",
-//     type: DocType.TXT,
-//   });
-
-//   console.log("Created documents:");
-//   console.log(doc1);
-//   console.log(doc2);
-
-//   const fetched = await documentService.getDocument({ id: doc1.id }); // getting document by ID
-//   console.log("\nFetched document:");
-//   console.log(fetched);
-
-//   const searchResult = await documentService.searchDocument({ // searching document by one of the filters -> " query"
-//     query: "backend",
-//     limit: 10,
-//     offset: 0,
-//   });
-
-//   console.log("\nSearch result:");
-//   console.log(searchResult);
-
-//   const typeResult = await documentService.searchDocument({ // searching document based on type
-//     type: DocType.PDF,
-//     limit: 10,
-//     offset: 0,
-//   });
-
-//   console.log("\nSearch by type:");
-//   console.log(typeResult);
-
-// }
-
-// main().catch(console.error);
