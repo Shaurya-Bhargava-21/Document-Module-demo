@@ -14,6 +14,7 @@ import {
   DocStatusType,
   type SoftDeleteDocumentCommand,
 } from "../contracts/states/document.js";
+import { AddVersionCommandSchema, ArchiveDocumentCommandSchema, CreateDocumentCommandSchema, GetDocumentCommandSchema, ListVersionCommandSchema, SearchDocumentCommandSchema, SoftDeleteDocumentCommandSchema } from "../validators/DocumentValidators.js";
 
 export class DocumentService implements IDocumentService {
   constructor(
@@ -22,11 +23,13 @@ export class DocumentService implements IDocumentService {
   ) {}
 
   async createDocument(command: CreateDocumentCommand): Promise<DocumentState> {
-    return this.documentRepo.create(command);
+    const validatedCommand = CreateDocumentCommandSchema.parse(command)
+    return this.documentRepo.create(validatedCommand);
   }
 
   async getDocument(command: GetDocumentCommand): Promise<DocumentState> {
-    const doc = await this.documentRepo.getById(command);
+    const validatedCommand = GetDocumentCommandSchema.parse(command);
+    const doc = await this.documentRepo.getById(validatedCommand);
     if (!doc) throw new Error("DOCUMENT_NOT_FOUND");
     return doc;
   }
@@ -34,11 +37,17 @@ export class DocumentService implements IDocumentService {
   async searchDocument(
     command: SearchDocumentCommand,
   ): Promise<DocumentState[]> {
-    return this.documentRepo.search(command);
+    const validatedCommand = SearchDocumentCommandSchema.parse(command);
+
+    return this.documentRepo.search(validatedCommand as SearchDocumentCommand);
   }
 
   async addVersion(command: AddVersionCommand): Promise<DocumentVersionState> {
-    const doc = await this.documentRepo.getById({ id: command.documentId });
+    const validatedCommand = AddVersionCommandSchema.parse(command)
+
+    const doc = await this.documentRepo.getById({
+      id: validatedCommand.documentId,
+    });
     if (!doc) {
       throw new Error("Document not found");
     }
@@ -67,15 +76,21 @@ export class DocumentService implements IDocumentService {
   async listVersion(
     command: ListVersionCommand,
   ): Promise<DocumentVersionState[]> {
-    return this.versionRepo.listVersions(command);
+    const validatedCommand = ListVersionCommandSchema.parse(command);
+    return this.versionRepo.listVersions(validatedCommand);
   }
 
   async archiveDocument(command: ArchiveDocumentCommand): Promise<void> {
-    await this.documentRepo.archive(command);
+    const validatedCommand = ArchiveDocumentCommandSchema.parse(command);
+    await this.documentRepo.archive(validatedCommand);
   }
 
   async softDeleteDocument(command: SoftDeleteDocumentCommand): Promise<void> {
-    const doc = await this.documentRepo.getById({id:command.documentId});
+    const validatedCommand = SoftDeleteDocumentCommandSchema.parse(command);
+
+    const doc = await this.documentRepo.getById({
+      id: validatedCommand.documentId,
+    });
     if(!doc){
       throw new Error("Document not found");
     }

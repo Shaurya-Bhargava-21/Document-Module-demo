@@ -12,6 +12,51 @@ async function main() {
   const versionRepo = new TypeOrmDocVersionRepo();
   const documentService = new DocumentService(documentRepo, versionRepo);
 
+  //  Test 1: Valid input
+  console.log("\n Test 1: Creating document with valid input...");
+  try {
+    const doc = await documentService.createDocument({
+      title: "My First Document",
+      type: DocType.PDF,
+    });
+    console.log("Document created:", doc.id);
+  } catch (error: any) {
+    console.error("Error:", error.message);
+  }
+
+  // Test 2: Invalid input - empty title
+  console.log("\n Test 2: Creating document with empty title...");
+  try {
+    await documentService.createDocument({
+      title: "",
+      type: DocType.PDF,
+    });
+  } catch (error: any) {
+    console.error(" Validation caught error:", error.message);
+  }
+
+  //  Test 3: Invalid input - wrong type
+  console.log("\n Test 3: Creating document with invalid type...");
+  try {
+    await documentService.createDocument({
+      title: "Test Document",
+      type: "INVALID" as any,
+    });
+  } catch (error: any) {
+    console.error("Validation caught error:", error.message);
+  }
+
+  //  Test 4: Invalid UUID
+  console.log("\n Test 4: Getting document with invalid UUID...");
+  try {
+    await documentService.getDocument({
+      id: "not-a-uuid",
+    });
+  } catch (error: any) {
+    console.error(" Validation caught error:", error.message);
+  }
+
+
   const createdDoc = await documentService.createDocument({
     title: "My First Document",
     type: DocType.PDF,
