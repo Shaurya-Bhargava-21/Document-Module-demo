@@ -72,11 +72,11 @@ export interface ArchiveDocumentCommand {
   documentId: string;
 }
 
-// export interface ServiceError {
-//   code: string;
-//   message: string;
-//   details?: unknown;
-// }
+export interface IServiceError {
+  code: string;
+  message: string;
+  details?: unknown;
+}
 
 export interface UpdateDocumentCommand {
   documentId: string; // which document to update

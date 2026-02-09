@@ -11,6 +11,7 @@ import {
   type SearchDocumentCommand,
   type SoftDeleteDocumentCommand,
 } from "../contracts/states/document.js";
+import { DocumentErrors } from "../errors/DocumentError.js";
 
 export class InMemoryDocService implements IDocumentService {
   private documents: DocumentState[] = [];
@@ -24,7 +25,7 @@ export class InMemoryDocService implements IDocumentService {
     const now = new Date();
 
     const doc: DocumentState = {
-      id: now.toDateString(),
+      id: this.generateId(),
       title: command.title,
       type: command.type,
       status: DocStatusType.PUBLISHED,
@@ -42,7 +43,7 @@ export class InMemoryDocService implements IDocumentService {
       (d) => d.id === command.id && d.status !== DocStatusType.DELETED,
     );
     if (!doc) {
-      throw new Error("Document not found");
+      throw DocumentErrors.NOT_FOUND({ id: command.id });
     }
     return doc;
   }
@@ -76,15 +77,15 @@ export class InMemoryDocService implements IDocumentService {
     const doc = this.documents.find((d) => d.id === command.documentId);
 
     if (!doc) {
-      throw new Error("Document not Found");
+      throw DocumentErrors.NOT_FOUND({ id: command.documentId });
     }
 
     if (!doc.active) {
-      throw new Error("Cannot add version to archived document");
+      throw DocumentErrors.ARCHIVED()
     }
 
     if (doc.status === DocStatusType.DELETED) {
-      throw new Error("Cannot add version to deleted document");
+      throw DocumentErrors.DELETED()
     }
 
     const nextVersion =
@@ -111,7 +112,7 @@ export class InMemoryDocService implements IDocumentService {
     const doc = this.documents.find((d) => d.id === command.documentId);
 
     if (!doc) {
-      throw new Error("Document not found");
+      throw DocumentErrors.NOT_FOUND()
     }
 
     return doc.versions ?? [];
@@ -120,7 +121,7 @@ export class InMemoryDocService implements IDocumentService {
     const doc = this.documents.find((d) => d.id === command.documentId);
 
     if (!doc) {
-      throw new Error("Document not found");
+      throw DocumentErrors.NOT_FOUND();
     }
 
     doc.active = false;
@@ -129,7 +130,7 @@ export class InMemoryDocService implements IDocumentService {
   async softDeleteDocument(command: SoftDeleteDocumentCommand): Promise<void> {
     const doc = this.documents.find((d) => d.id === command.documentId);
     if (!doc) {
-      throw new Error("DOCUMENT_NOT_FOUND");
+      throw DocumentErrors.NOT_FOUND();
     }
 
     doc.status = DocStatusType.DELETED;

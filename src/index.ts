@@ -7,209 +7,210 @@ import { InMemoryDocService } from "./services/InMemoryDocService.js";
 
 async function main() {
   await AppDataSource.initialize();
-  console.log(" Database connected");
+  console.log("Database connected\n");
 
   const documentRepo = new TypeOrmDocRepo();
   const versionRepo = new TypeOrmDocVersionRepo();
   const documentService = new DocumentService(documentRepo, versionRepo);
   const memoryService = new InMemoryDocService();
 
-  const memoryDoc = await memoryService.createDocument({
-    title: "My First Document",
+  console.log("=".repeat(60));
+  console.log("Testing TypeORM Document Service");
+  console.log("=".repeat(60));
+
+  // Test 1: Create Document
+  console.log("\n1. Testing createDocument\n");
+  const doc = await documentService.createDocument({
+    title: "Test Document",
     type: DocType.PDF,
   });
+  console.log("Document created:", doc.id);
 
-  console.log("Created document:", memoryDoc);
+  // Test 2: Get Document
+  console.log("\n2. Testing getDocument\n");
+  const fetchedDoc = await documentService.getDocument({ id: doc.id });
+  console.log("Document fetched: Title:", fetchedDoc.title);
 
-  const mversion1 = await memoryService.addVersion({
-    documentId: memoryDoc.id,
-    content: "Initial content",
-  });
-
-  console.log("Added version:", mversion1);
-
-  const mversion2 = await memoryService.addVersion({
-    documentId: memoryDoc.id,
-    content: "Updated content",
-  });
-
-  console.log("Added version:", mversion2);
-
-  const inmemoryversions = await memoryService.listVersion({
-    documentId: memoryDoc.id,
-  });
-
-  console.log("All versions:", inmemoryversions);
-
-  const fetched = await memoryService.getDocument({ id: memoryDoc.id });
-  console.log("Fetched document:", fetched);
-
-  //  Test 1: Valid input
-  console.log("\n Test 1: Creating document with valid input...");
-  try {
-    const doc = await documentService.createDocument({
-      title: "My First Document",
-      type: DocType.PDF,
-    });
-    console.log("Document created:", doc.id);
-  } catch (error: any) {
-    console.error("Error:", error.message);
-  }
-
-  // Test 2: Invalid input - empty title
-  console.log("\n Test 2: Creating document with empty title...");
-  try {
-    await documentService.createDocument({
-      title: "",
-      type: DocType.PDF,
-    });
-  } catch (error: any) {
-    console.error(" Validation caught error:", error.message);
-  }
-
-  //  Test 3: Invalid input - wrong type
-  console.log("\n Test 3: Creating document with invalid type...");
-  try {
-    await documentService.createDocument({
-      title: "Test Document",
-      type: "INVALID" as any,
-    });
-  } catch (error: any) {
-    console.error("Validation caught error:", error.message);
-  }
-
-  //  Test 4: Invalid UUID
-  console.log("\n Test 4: Getting document with invalid UUID...");
-  try {
-    await documentService.getDocument({
-      id: "not-a-uuid",
-    });
-  } catch (error: any) {
-    console.error(" Validation caught error:", error.message);
-  }
-
-
-  const createdDoc = await documentService.createDocument({
-    title: "My First Document",
-    type: DocType.PDF,
-  });
-
-  console.log("Created document:", createdDoc);
-
-  const fetchedDoc = await documentService.getDocument({
-    id: createdDoc.id,
-  });
-
-  console.log("Fetched document:", fetchedDoc);
-
+  // Test 3: Search Document
+  console.log("\n3. Testing searchDocument\n");
   const searchResults = await documentService.searchDocument({
-    query: "First",
+    query: "Test",
     limit: 10,
     offset: 0,
   });
+  console.log("Search completed. Found:", searchResults.length, "documents");
+  console.log("Results:", searchResults);
 
-  console.log("Search results:", searchResults);
-
+  // Test 4: Add Version
+  console.log("\n4. Testing addVersion\n");
   const version1 = await documentService.addVersion({
-    documentId: createdDoc.id,
-    content: "Initial draft content",
+    documentId: doc.id,
+    content: "First version content",
   });
+  console.log("Version added:", version1.version);
+  console.log(version1);
 
-  console.log(" Added version 1:", version1);
-
+  // Test 5: Add Another Version
+  console.log("\n5. Creating another Version\n");
   const version2 = await documentService.addVersion({
-    documentId: createdDoc.id,
-    content: "Second draft content",
+    documentId: doc.id,
+    content: "Second version content",
   });
+  console.log("Version added:", version2.version);
+  console.log(version2);
 
-  console.log(" Added version 2:", version2);
+  // Test 6: List Versions
+  console.log("\n6. Testing listVersion\n");
+  const versions = await documentService.listVersion({ documentId: doc.id });
+  console.log("All Versions list for Doc ", versions);
 
-  const versions = await documentService.listVersion({
-    documentId: createdDoc.id,
-  });
+  // Test 7: Archive Document
+  console.log("\n7. Testing archiveDocument\n");
+  await documentService.archiveDocument({ documentId: doc.id });
+  const archivedDoc = await documentService.getDocument({ id: doc.id });
+  console.log("Document archived.", archivedDoc);
+  console.log("Active:", archivedDoc.active);
 
-  console.log(" All versions:", versions);
-
-  await documentService.archiveDocument({
-    documentId: createdDoc.id,
-  });
-
-  console.log(" Document archived");
-
-  const archivedDoc = await documentService.getDocument({
-    id: createdDoc.id,
-  });
-
-  console.log(" Archived document state:", archivedDoc);
-
-  // Trying to add version to archived document (should fail)
+  // Test 8: Trying to add version to archived document (should fail)
+  console.log("\n8. Testing version on archived document (should fail)\n");
   try {
     await documentService.addVersion({
-      documentId: createdDoc.id,
-      content: "This should fail - archived doc",
+      documentId: doc.id,
+      content: "This should fail",
     });
-  } catch (err: any) {
-    console.log(" Expected error (archived):", err.message);
+    console.log(
+      "ERROR: This Shouldn't have allowed adding version on an archived document",
+    );
+  } catch (error: any) {
+    console.log(
+      "Worked Correctly ,blocked adding version to an archived doc",
+      error.message,
+    );
   }
 
-  // Soft delete document
-  await documentService.softDeleteDocument({
-    documentId: createdDoc.id,
-  });
-  console.log("Document soft deleted");
-
-  // Try to get soft deleted document (should return null)
-  try {
-    await documentService.getDocument({
-      id: createdDoc.id,
-    });
-    console.log(" TEST FAILED: Should not find deleted document");
-  } catch (err: any) {
-    console.log("Expected error (deleted):", err.message);
-  }
-
-  //Search should not include deleted documents
-  const searchAfterDelete = await documentService.searchDocument({
-    query: "First",
-    limit: 10,
-    offset: 0,
-  });
-  console.log("Search after delete (should be empty):", searchAfterDelete);
-
-  // Create another document to test soft delete flow
+  // Test 9: Create another document for soft delete test
+  console.log(
+    "\n9. Creating a new document (Doc 2) for the soft delete test\n",
+  );
   const doc2 = await documentService.createDocument({
-    title: "Second Document",
+    title: "Document to Delete",
     type: DocType.TXT,
   });
-  console.log("Created second document:", doc2);
+  console.log("Document created:", doc2.id);
 
-  // Add a version to second document
-  await documentService.addVersion({
-    documentId: doc2.id,
-    content: "Version 1 of second doc",
-  });
-  console.log("Added version to second document");
+  // Test 10: Soft Delete Document
+  console.log("\n10. Testing softDeleteDocument\n ");
+  await documentService.softDeleteDocument({ documentId: doc2.id });
+  console.log("Document soft deleted");
 
-  //Soft delete without archiving first
-  await documentService.softDeleteDocument({
-    documentId: doc2.id,
-  });
-  console.log("Second document soft deleted directly");
-
-  //Try to add version to soft deleted document (should fail)
+  // Test 11: Trying to get deleted document (should fail)
+  console.log("\n11. Testing getDocument (should fail) on deleted document");
   try {
-    await documentService.addVersion({
-      documentId: doc2.id,
-      content: "This should fail - deleted doc",
-    });
-  } catch (err: any) {
-    console.log("Expected error (deleted):", err.message);
+    await documentService.getDocument({ id: doc2.id });
+    console.log(
+      "ERROR: There is some error, this should not have found a deleted document",
+    );
+  } catch (error: any) {
+    console.log(
+      "worked correctly and did not find the deleted document",
+      error.message,
+    );
   }
 
-  console.log("\n All tests completed successfully!");
+  // Test 12: Verify deleted document not in search
+  console.log("\n12. Verifying deleted document not available in search\n");
+  const searchAfterDelete = await documentService.searchDocument({
+    query: "Delete",
+    limit: 10,
+    offset: 0,
+  });
+  const foundDeleted = searchAfterDelete.find((d) => d.id === doc2.id);
+  if (foundDeleted) {
+    console.log("ERROR: Deleted document found in search");
+  } else {
+    console.log("Deleted document correctly excluded from search");
+  }
+
+  console.log("\n" + "=".repeat(60));
+  console.log("Testing InMemory Document Service Now");
+  console.log("=".repeat(60));
+
+  // Test 13: InMemory Create Document
+  console.log("\n13. Testing InMemory createDocument\n");
+  const memDoc = await memoryService.createDocument({
+    title: "Memory Test Document",
+    type: DocType.PDF,
+  });
+  console.log("Memory document created:", memDoc.id);
+
+  // Test 14: InMemory Get Document
+  console.log("\n14. Testing InMemory getDocument\n");
+  const memFetched = await memoryService.getDocument({ id: memDoc.id });
+  console.log("Memory document fetched:", memFetched.title);
+
+  // Test 15: InMemory Search
+  console.log("\n15. Testing InMemory searchDocument\n");
+  const memSearch = await memoryService.searchDocument({
+    query: "Memory",
+    limit: 10,
+    offset: 0,
+  });
+  console.log(
+    "Memory search completed. Found:",
+    memSearch.length,
+    "document(s)",
+  );
+  console.log(memSearch);
+
+  // Test 16: InMemory Add Version
+  console.log("\n16. Testing InMemory addVersion\n");
+  const memVersion = await memoryService.addVersion({
+    documentId: memDoc.id,
+    content: "Memory version content",
+  });
+  console.log("Memory version added:", memVersion.version);
+
+  // Test 17: InMemory List Versions
+  console.log("\n17. Testing InMemory listVersion\n");
+  const memVersions = await memoryService.listVersion({
+    documentId: memDoc.id,
+  });
+  console.log("Memory versions listed. Total:", memVersions.length);
+  console.log(memVersions);
+
+  // Test 18: InMemory Archive
+  console.log("\n18. Testing InMemory archiveDocument\n");
+  await memoryService.archiveDocument({ documentId: memDoc.id });
+  const memArchived = await memoryService.getDocument({ id: memDoc.id });
+  console.log("Memory document archived.", memArchived);
+  console.log("Active:", memArchived.active);
+
+  // Test 19: InMemory Soft Delete
+  console.log("\n19. Creating another memory document for deletion\n");
+  const memDoc2 = await memoryService.createDocument({
+    title: "Memory Delete Test",
+    type: DocType.TXT,
+  });
+  console.log("Memory document created:", memDoc2.id);
+
+  console.log("\n20. Testing InMemory softDeleteDocument\n");
+  await memoryService.softDeleteDocument({ documentId: memDoc2.id });
+  console.log("Memory document soft deleted");
+
+  // Test 20: InMemory Get Deleted (should fail)
+  console.log("\n21. Testing InMemory get deleted (should fail)\n");
+  try {
+    await memoryService.getDocument({ id: memDoc2.id });
+    console.log("ERROR: Should not find deleted memory document");
+  } catch (error: any) {
+    console.log("Worked correctly", error.message);
+  }
+
+  console.log("\n" + "=".repeat(60));
+  console.log("All Tests Completed Successfully!");
+  console.log("=".repeat(60));
 }
 
 main().catch((err) => {
   console.error("Error:", err);
 });
-

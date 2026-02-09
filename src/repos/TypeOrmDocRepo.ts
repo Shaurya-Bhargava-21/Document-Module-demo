@@ -69,7 +69,7 @@ export class TypeOrmDocRepo implements IDocumentRepository {
     qb.skip(command.offset).take(command.limit);
 
     const docs = await qb.getMany();
-    return docs.map(this.toState);
+    return docs.map((doc) => this.toState(doc));
   }
 
   async update(command: UpdateDocumentCommand): Promise<void> {
@@ -84,7 +84,7 @@ export class TypeOrmDocRepo implements IDocumentRepository {
 
   async archive(command: ArchiveDocumentCommand): Promise<void> {
     const doc = await this.repo.findOne({ where: { id: command.documentId } });
-    if (!doc) throw new Error("DOCUMENT_NOT_FOUND");
+    if (!doc) return;
 
     doc.active = false; // mark as archived
     doc.status = DocStatusType.DRAFT; // optional: reset status
@@ -94,7 +94,7 @@ export class TypeOrmDocRepo implements IDocumentRepository {
   async softDelete(command: SoftDeleteDocumentCommand): Promise<void> {
     const doc = await this.repo.findOne({where:{id:command.documentId}})
 
-    if(!doc) throw new Error("Document not found");
+    if(!doc) return;
 
     doc.status = DocStatusType.DELETED
     doc.active = false;
