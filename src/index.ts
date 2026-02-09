@@ -1,25 +1,18 @@
 import { DocumentService } from "./services/DocumentService.js";
 import { DocType } from "./contracts/states/document.js";
 import { AppDataSource } from "./persistence/data-source.js";
-import { TypeOrmDocRepo } from "./repos/TypeOrmDocRepo.js";
-import { TypeOrmDocVersionRepo } from "./repos/TypeOrmDocVersionRepo.js";
 import { InMemoryDocService } from "./services/InMemoryDocService.js";
-import { InMemoryDocRepo } from "./repos/InMemoryDocRepo.js";
-import { InMemoryDocVersionRepo } from "./repos/InMemoryDocVersionRepo.js";
+import type { IDocumentService } from "./contracts/services/IDocumentService.js";
 
 async function main() {
   await AppDataSource.initialize();
   console.log("Database connected\n");
 
-  const documentRepo = new TypeOrmDocRepo();
-  const versionRepo = new TypeOrmDocVersionRepo();
-  const documentService = new DocumentService(documentRepo, versionRepo);
-  const InMemoryRepo = new InMemoryDocRepo();
-  const InMemoryVersionRepo = new InMemoryDocVersionRepo();
-  const memoryService = new InMemoryDocService(InMemoryRepo,InMemoryVersionRepo);
+  let documentService: IDocumentService = new DocumentService();
+  documentService = new InMemoryDocService();
 
   console.log("=".repeat(60));
-  console.log("Testing TypeORM Document Service");
+  console.log("Testing Document Service");
   console.log("=".repeat(60));
 
   // Test 1: Create Document
@@ -134,87 +127,9 @@ async function main() {
   } else {
     console.log("Deleted document correctly excluded from search");
   }
-
+  
   console.log("\n" + "=".repeat(60));
-  console.log("Testing InMemory Document Service Now");
-  console.log("=".repeat(60));
-
-  // Test 13: InMemory Create Document
-  console.log("\n13. Testing InMemory createDocument\n");
-  const memDoc = await memoryService.createDocument({
-    title: "Memory Test Document",
-    type: DocType.PDF,
-  });
-  console.log("Memory document created:", memDoc.id);
-
-  // Test 14: InMemory Get Document
-  console.log("\n14. Testing InMemory getDocument\n");
-  const memFetched = await memoryService.getDocument({ id: memDoc.id });
-  console.log("Memory document fetched:", memFetched.title);
-
-  // Test 15: InMemory Search
-  console.log("\n15. Testing InMemory searchDocument\n");
-  const memSearch = await memoryService.searchDocument({
-    query: "Memory",
-    limit: 10,
-    offset: 0,
-  });
-  console.log(
-    "Memory search completed. Found:",
-    memSearch.length,
-    "document(s)",
-  );
-  console.log(memSearch);
-
-  // Test 16: InMemory Add Version
-  console.log("\n16. Testing InMemory addVersion\n");
-  const memVersion = await memoryService.addVersion({
-    documentId: memDoc.id,
-    content: "Memory version content",
-  });
-  console.log("Memory version added:", memVersion.version);
-
-  // Test 17: InMemory List Versions
-  console.log("\n17. Testing InMemory listVersion\n");
-  const memVersions = await memoryService.listVersion({
-    documentId: memDoc.id,
-  });
-  console.log("Memory versions listed. Total:", memVersions.length);
-  console.log(memVersions);
-
-  // Test 18: InMemory Archive
-  console.log("\n18. Testing InMemory archiveDocument\n");
-  await memoryService.archiveDocument({ documentId: memDoc.id });
-  const memArchived = await memoryService.getDocument({ id: memDoc.id });
-  console.log("Memory document archived.", memArchived);
-  console.log("Active:", memArchived.active);
-
-  // Test 19: InMemory Soft Delete
-  console.log("\n19. Creating another memory document for deletion\n");
-  const memDoc2 = await memoryService.createDocument({
-    title: "Memory Delete Test",
-    type: DocType.TXT,
-  });
-  console.log("Memory document created:", memDoc2.id);
-
-  console.log("\n20. Testing InMemory softDeleteDocument\n");
-  await memoryService.softDeleteDocument({ documentId: memDoc2.id });
-  console.log("Memory document soft deleted");
-
-  // Test 20: InMemory Get Deleted (should fail)
-  console.log("\n21. Testing InMemory get deleted (should fail)\n");
-  try {
-    await memoryService.getDocument({ id: memDoc2.id });
-    console.log("ERROR: Should not find deleted memory document");
-  } catch (error: any) {
-    console.log("Worked correctly", error.message);
-  }
-
-  console.log("\n" + "=".repeat(60));
-  console.log("All Tests Completed Successfully!");
-  console.log("=".repeat(60));
 }
-
 main().catch((err) => {
   console.error("Error:", err);
 });

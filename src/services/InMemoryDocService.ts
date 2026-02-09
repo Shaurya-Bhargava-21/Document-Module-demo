@@ -1,39 +1,37 @@
-import type { IDocumentRepository } from "../contracts/repos/IDocumentRepository.js";
-import type { IDocumentVersionRepository } from "../contracts/repos/IDocumentVersionRepository.js";
 import type { IDocumentService } from "../contracts/services/IDocumentService.js";
 import {
   DocStatusType,
   type AddVersionCommand,
   type ArchiveDocumentCommand,
   type CreateDocumentCommand,
-  type DocumentState,
-  type DocumentVersionState,
   type GetDocumentCommand,
   type ListVersionCommand,
   type SearchDocumentCommand,
   type SoftDeleteDocumentCommand,
 } from "../contracts/states/document.js";
 import { DocumentErrors } from "../errors/DocumentError.js";
+import { InMemoryDocRepo } from "../repos/InMemoryDocRepo.js";
 
 export class InMemoryDocService implements IDocumentService {
-  constructor(
-    private readonly documentRepo: IDocumentRepository,
-    private readonly versionRepo: IDocumentVersionRepository,
-  ) {}
+  private repo: InMemoryDocRepo;
+
+  constructor() {
+    this.repo = new InMemoryDocRepo();
+  }
   async createDocument(command: CreateDocumentCommand) {
-    return this.documentRepo.create(command);
+    return this.repo.create(command);
   }
   async getDocument(command: GetDocumentCommand) {
-    const doc = await this.documentRepo.getById(command);
+    const doc = await this.repo.getById(command);
     if (!doc) throw DocumentErrors.NOT_FOUND();
     return doc;
   }
   async searchDocument(command: SearchDocumentCommand) {
-    return this.documentRepo.search(command);
+    return this.repo.search(command);
   }
 
   async addVersion(command: AddVersionCommand) {
-    const doc = await this.documentRepo.getById({
+    const doc = await this.repo.getById({
       id: command.documentId,
     });
 
@@ -41,7 +39,7 @@ export class InMemoryDocService implements IDocumentService {
     if (!doc.active) throw DocumentErrors.ARCHIVED();
     if (doc.status === DocStatusType.DELETED) throw DocumentErrors.DELETED();
 
-    const versions = await this.versionRepo.listVersions({
+    const versions = await this.repo.listVersions({
       documentId: command.documentId,
     });
 
@@ -50,7 +48,7 @@ export class InMemoryDocService implements IDocumentService {
         ? 1
         : Math.max(...versions.map((v) => v.version)) + 1;
 
-    return this.versionRepo.addVersion({
+    return this.repo.addVersion({
       documentId: command.documentId,
       content: command.content,
       version: nextVersion,
@@ -58,22 +56,22 @@ export class InMemoryDocService implements IDocumentService {
   }
 
   async listVersion(command: ListVersionCommand) {
-    return this.versionRepo.listVersions(command);
+    return this.repo.listVersions(command);
   }
 
   async archiveDocument(command: ArchiveDocumentCommand) {
-    const doc = await this.documentRepo.getById({
+    const doc = await this.repo.getById({
       id: command.documentId,
     });
     if (!doc) throw DocumentErrors.NOT_FOUND();
-    await this.documentRepo.archive(command);
+    await this.repo.archive(command);
   }
 
   async softDeleteDocument(command: SoftDeleteDocumentCommand) {
-    const doc = await this.documentRepo.getById({
+    const doc = await this.repo.getById({
       id: command.documentId,
     });
     if (!doc) throw DocumentErrors.NOT_FOUND();
-    await this.documentRepo.softDelete(command);
+    await this.repo.softDelete(command);
   }
 }
