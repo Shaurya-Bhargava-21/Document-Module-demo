@@ -10,7 +10,7 @@ import {
   type SearchDocumentCommand,
   type SoftDeleteDocumentCommand,
   type UpdateDocumentCommand,
-} from "../contracts/states/document.js";
+} from "../../contracts/states/document.js";
 
 export class InMemoryDocRepo {
   private documents: DocumentState[] = [];

@@ -14,6 +14,6 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   logging: true,     
   entities: [DocumentEntity,DocumentVersionEntity],
-  migrations: ["src/persistence/migrations/*.ts"],
+  migrations: ["src/app/persistence/migrations/*.ts"],
   migrationsTableName: "migrations_history"
 });

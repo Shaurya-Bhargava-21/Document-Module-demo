@@ -1,6 +1,5 @@
 import { Not, Repository } from "typeorm";
-import { AppDataSource } from "../persistence/data-source.js";
-import { DocumentEntity } from "../persistence/entities/DocumentEntity.js";
+
 import {
   DocStatusType,
   type AddVersionRepoCommand,
@@ -13,9 +12,11 @@ import {
   type SearchDocumentCommand,
   type SoftDeleteDocumentCommand,
   type UpdateDocumentCommand,
-} from "../contracts/states/document.js";
-
+} from "../../contracts/states/document.js";
 import { DocumentVersionEntity } from "../persistence/entities/DocumentVersionEntity.js";
+import { AppDataSource } from "../persistence/data-source.js";
+import { DocumentEntity } from "../persistence/entities/DocumentEntity.js";
+
 
 export class TypeOrmDocRepo {
   private docRepo: Repository<DocumentEntity>;

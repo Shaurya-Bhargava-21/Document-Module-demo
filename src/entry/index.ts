@@ -1,15 +1,15 @@
-import { DocumentService } from "./services/DocumentService.js";
-import { DocType } from "./contracts/states/document.js";
-import { AppDataSource } from "./persistence/data-source.js";
-import { InMemoryDocService } from "./services/InMemoryDocService.js";
-import type { IDocumentService } from "./contracts/services/IDocumentService.js";
+import { DocumentService } from "../app/services/DocumentService.js";
+import { DocType } from "../contracts/states/document.js";
+import { InMemoryDocService } from "../app/services/InMemoryDocService.js";
+import type { IDocumentService } from "../contracts/services/IDocumentService.js";
+import { AppDataSource } from "../app/persistence/data-source.js";
 
 async function main() {
   await AppDataSource.initialize();
   console.log("Database connected\n");
 
   let documentService: IDocumentService = new DocumentService();
-  documentService = new InMemoryDocService();
+  // documentService = new InMemoryDocService();
 
   console.log("=".repeat(60));
   console.log("Testing Document Service");
@@ -127,7 +127,7 @@ async function main() {
   } else {
     console.log("Deleted document correctly excluded from search");
   }
-  
+
   console.log("\n" + "=".repeat(60));
 }
 main().catch((err) => {

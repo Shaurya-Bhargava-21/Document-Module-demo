@@ -1,5 +1,4 @@
 import { CreateDateColumn, Entity,Column ,PrimaryGeneratedColumn, UpdateDateColumn, OneToMany, ManyToOne, type Relation } from "typeorm";
-import type { DocStatusType, DocType } from "../../contracts/states/document.js";
 import { DocumentEntity } from "./DocumentEntity.js";
 
 @Entity("documentversions")

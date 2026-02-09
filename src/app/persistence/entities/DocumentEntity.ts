@@ -1,6 +1,7 @@
 import { CreateDateColumn, Entity,Column ,PrimaryGeneratedColumn, UpdateDateColumn, OneToMany } from "typeorm";
-import { DocStatusType, DocType } from "../../contracts/states/document.js";
+
 import { DocumentVersionEntity } from "./DocumentVersionEntity.js";
+import { DocStatusType, DocType } from "../../../contracts/states/document.js";
 
 @Entity("documents")
 export class DocumentEntity {

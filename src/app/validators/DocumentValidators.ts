@@ -1,5 +1,5 @@
 import z from "zod";
-import { DocStatusType, DocType } from "../contracts/states/document.js";
+import { DocStatusType, DocType } from "../../contracts/states/document.js";
 
 export const CreateDocumentCommandSchema = z.object({
   title: z
@@ -65,8 +65,8 @@ export const SoftDeleteDocumentCommandSchema = z.object({
   documentId: z.uuid({ message: "Invalid Document Id format" }),
 });
 
-
-export const UpdateDocumentCommandSchema = z.object({
+export const UpdateDocumentCommandSchema = z
+  .object({
     documentId: z.uuid({ message: "Invalid Document Id format" }),
     title: z
       .string()
@@ -91,6 +91,8 @@ export const UpdateDocumentCommandSchema = z.object({
     {
       message: "At least one field (title, status, or active) must be provided",
     },
-);
+  );
 
-export type SearchDocumentCommandValidated = z.infer<typeof SearchDocumentCommandSchema>
+export type SearchDocumentCommandValidated = z.infer<
+  typeof SearchDocumentCommandSchema
+>;

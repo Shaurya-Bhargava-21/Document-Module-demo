@@ -1,4 +1,5 @@
-import type { IDocumentService } from "../contracts/services/IDocumentService.js";
+import { DocumentErrors } from "../../contracts/errors/DocumentError.js";
+import type { IDocumentService } from "../../contracts/services/IDocumentService.js";
 import {
   DocStatusType,
   type AddVersionCommand,
@@ -8,8 +9,8 @@ import {
   type ListVersionCommand,
   type SearchDocumentCommand,
   type SoftDeleteDocumentCommand,
-} from "../contracts/states/document.js";
-import { DocumentErrors } from "../errors/DocumentError.js";
+} from "../../contracts/states/document.js";
+
 import { InMemoryDocRepo } from "../repos/InMemoryDocRepo.js";
 
 export class InMemoryDocService implements IDocumentService {

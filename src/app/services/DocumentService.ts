@@ -1,4 +1,5 @@
-import type { IDocumentService } from "../contracts/services/IDocumentService.js";
+import { DocumentErrors } from "../../contracts/errors/DocumentError.js";
+import type { IDocumentService } from "../../contracts/services/IDocumentService.js";
 
 import {
   type CreateDocumentCommand,
@@ -11,8 +12,8 @@ import {
   type ArchiveDocumentCommand,
   DocStatusType,
   type SoftDeleteDocumentCommand,
-} from "../contracts/states/document.js";
-import { DocumentErrors } from "../errors/DocumentError.js";
+} from "../../contracts/states/document.js";
+
 import { TypeOrmDocRepo } from "../repos/TypeOrmDocRepo.js";
 import {
   AddVersionCommandSchema,
