@@ -1,3 +1,5 @@
+import type { IDocumentRepository } from "../contracts/repos/IDocumentRepository.js";
+import type { IDocumentVersionRepository } from "../contracts/repos/IDocumentVersionRepository.js";
 import type { IDocumentService } from "../contracts/services/IDocumentService.js";
 import {
   DocStatusType,
@@ -14,127 +16,64 @@ import {
 import { DocumentErrors } from "../errors/DocumentError.js";
 
 export class InMemoryDocService implements IDocumentService {
-  private documents: DocumentState[] = [];
-
-  private generateId(): string {
-    return crypto.randomUUID();
+  constructor(
+    private readonly documentRepo: IDocumentRepository,
+    private readonly versionRepo: IDocumentVersionRepository,
+  ) {}
+  async createDocument(command: CreateDocumentCommand) {
+    return this.documentRepo.create(command);
   }
-
-  constructor() {}
-  async createDocument(command: CreateDocumentCommand): Promise<DocumentState> {
-    const now = new Date();
-
-    const doc: DocumentState = {
-      id: this.generateId(),
-      title: command.title,
-      type: command.type,
-      status: DocStatusType.PUBLISHED,
-      active: true,
-      createdAt: now,
-      updatedAt: now,
-      versions: [],
-    };
-
-    this.documents.push(doc);
+  async getDocument(command: GetDocumentCommand) {
+    const doc = await this.documentRepo.getById(command);
+    if (!doc) throw DocumentErrors.NOT_FOUND();
     return doc;
   }
-  async getDocument(command: GetDocumentCommand): Promise<DocumentState> {
-    const doc = this.documents.find(
-      (d) => d.id === command.id && d.status !== DocStatusType.DELETED,
-    );
-    if (!doc) {
-      throw DocumentErrors.NOT_FOUND({ id: command.id });
-    }
-    return doc;
-  }
-  async searchDocument(
-    command: SearchDocumentCommand,
-  ): Promise<DocumentState[]> {
-    let result = this.documents.filter(
-      (d) => d.status !== DocStatusType.DELETED,
-    );
-    if (command.query) {
-      result = result.filter((d) =>
-        d.title.toLowerCase().includes(command.query!.toLowerCase()),
-      );
-    }
-    if (command.active !== undefined) {
-      result = result.filter((d) => d.active === command.active);
-    }
-
-    if (command.type) {
-      result = result.filter((d) => d.type === command.type);
-    }
-
-    if (command.status) {
-      result = result.filter((d) => d.status === command.status);
-    }
-
-    return result.slice(command.offset, command.offset + command.limit);
+  async searchDocument(command: SearchDocumentCommand) {
+    return this.documentRepo.search(command);
   }
 
-  async addVersion(command: AddVersionCommand): Promise<DocumentVersionState> {
-    const doc = this.documents.find((d) => d.id === command.documentId);
+  async addVersion(command: AddVersionCommand) {
+    const doc = await this.documentRepo.getById({
+      id: command.documentId,
+    });
 
-    if (!doc) {
-      throw DocumentErrors.NOT_FOUND({ id: command.documentId });
-    }
+    if (!doc) throw DocumentErrors.NOT_FOUND();
+    if (!doc.active) throw DocumentErrors.ARCHIVED();
+    if (doc.status === DocStatusType.DELETED) throw DocumentErrors.DELETED();
 
-    if (!doc.active) {
-      throw DocumentErrors.ARCHIVED()
-    }
-
-    if (doc.status === DocStatusType.DELETED) {
-      throw DocumentErrors.DELETED()
-    }
+    const versions = await this.versionRepo.listVersions({
+      documentId: command.documentId,
+    });
 
     const nextVersion =
-      doc.versions && doc.versions.length > 0
-        ? Math.max(...doc.versions.map((v) => v.version)) + 1
-        : 1;
+      versions.length === 0
+        ? 1
+        : Math.max(...versions.map((v) => v.version)) + 1;
 
-    const version: DocumentVersionState = {
-      id: this.generateId(),
-      documentId: doc.id,
-      version: nextVersion,
+    return this.versionRepo.addVersion({
+      documentId: command.documentId,
       content: command.content,
-      createdAt: new Date(),
-    };
-
-    doc.versions!.push(version);
-    doc.updatedAt = new Date();
-
-    return version;
+      version: nextVersion,
+    });
   }
-  async listVersion(
-    command: ListVersionCommand,
-  ): Promise<DocumentVersionState[]> {
-    const doc = this.documents.find((d) => d.id === command.documentId);
 
-    if (!doc) {
-      throw DocumentErrors.NOT_FOUND()
-    }
-
-    return doc.versions ?? [];
+  async listVersion(command: ListVersionCommand) {
+    return this.versionRepo.listVersions(command);
   }
-  async archiveDocument(command: ArchiveDocumentCommand): Promise<void> {
-    const doc = this.documents.find((d) => d.id === command.documentId);
 
-    if (!doc) {
-      throw DocumentErrors.NOT_FOUND();
-    }
-
-    doc.active = false;
-    doc.updatedAt = new Date();
+  async archiveDocument(command: ArchiveDocumentCommand) {
+    const doc = await this.documentRepo.getById({
+      id: command.documentId,
+    });
+    if (!doc) throw DocumentErrors.NOT_FOUND();
+    await this.documentRepo.archive(command);
   }
-  async softDeleteDocument(command: SoftDeleteDocumentCommand): Promise<void> {
-    const doc = this.documents.find((d) => d.id === command.documentId);
-    if (!doc) {
-      throw DocumentErrors.NOT_FOUND();
-    }
 
-    doc.status = DocStatusType.DELETED;
-    doc.active = false;
-    doc.updatedAt = new Date();
+  async softDeleteDocument(command: SoftDeleteDocumentCommand) {
+    const doc = await this.documentRepo.getById({
+      id: command.documentId,
+    });
+    if (!doc) throw DocumentErrors.NOT_FOUND();
+    await this.documentRepo.softDelete(command);
   }
 }

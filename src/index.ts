@@ -4,6 +4,8 @@ import { AppDataSource } from "./persistence/data-source.js";
 import { TypeOrmDocRepo } from "./repos/TypeOrmDocRepo.js";
 import { TypeOrmDocVersionRepo } from "./repos/TypeOrmDocVersionRepo.js";
 import { InMemoryDocService } from "./services/InMemoryDocService.js";
+import { InMemoryDocRepo } from "./repos/InMemoryDocRepo.js";
+import { InMemoryDocVersionRepo } from "./repos/InMemoryDocVersionRepo.js";
 
 async function main() {
   await AppDataSource.initialize();
@@ -12,7 +14,9 @@ async function main() {
   const documentRepo = new TypeOrmDocRepo();
   const versionRepo = new TypeOrmDocVersionRepo();
   const documentService = new DocumentService(documentRepo, versionRepo);
-  const memoryService = new InMemoryDocService();
+  const InMemoryRepo = new InMemoryDocRepo();
+  const InMemoryVersionRepo = new InMemoryDocVersionRepo();
+  const memoryService = new InMemoryDocService(InMemoryRepo,InMemoryVersionRepo);
 
   console.log("=".repeat(60));
   console.log("Testing TypeORM Document Service");

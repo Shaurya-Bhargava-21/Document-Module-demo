@@ -15,7 +15,15 @@ import {
   type SoftDeleteDocumentCommand,
 } from "../contracts/states/document.js";
 import { DocumentErrors } from "../errors/DocumentError.js";
-import { AddVersionCommandSchema, ArchiveDocumentCommandSchema, CreateDocumentCommandSchema, GetDocumentCommandSchema, ListVersionCommandSchema, SearchDocumentCommandSchema, SoftDeleteDocumentCommandSchema } from "../validators/DocumentValidators.js";
+import {
+  AddVersionCommandSchema,
+  ArchiveDocumentCommandSchema,
+  CreateDocumentCommandSchema,
+  GetDocumentCommandSchema,
+  ListVersionCommandSchema,
+  SearchDocumentCommandSchema,
+  SoftDeleteDocumentCommandSchema,
+} from "../validators/DocumentValidators.js";
 
 export class DocumentService implements IDocumentService {
   constructor(
