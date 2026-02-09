@@ -19,5 +19,5 @@ export interface IDocumentService {
   archiveDocument(command:ArchiveDocumentCommand):Promise<void>;
   softDeleteDocument(command:SoftDeleteDocumentCommand):Promise<void>;
 }
-// ex - parseStringToDate
+
 

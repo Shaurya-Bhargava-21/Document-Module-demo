@@ -46,13 +46,6 @@ export interface SearchDocumentCommand { // to find many documents
   offset: number; // starting index
 }
 
-// export interface SearchDocumentsResult {
-//   documents: DocumentState[];
-//   total: number;
-//   limit: number;
-//   offset: number;
-// }
-
 export interface AddVersionCommand {
   documentId: string;
   content: string;
@@ -88,5 +81,3 @@ export interface UpdateDocumentCommand {
 export interface SoftDeleteDocumentCommand {
   documentId:string;
 }
-
-// finish all the commands required for documentservice
