@@ -12,7 +12,9 @@ export const CreateDocumentCommandSchema = z.object({
     .string()
     .refine(
       (val): val is DocType => Object.values(DocType).includes(val as DocType),
-      { message: "Invalid document type" },
+      {
+        message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+      },
     ),
 });
 
@@ -25,14 +27,16 @@ export const SearchDocumentCommandSchema = z.object({
   type: z
     .string()
     .refine((val) => Object.values(DocType).includes(val as DocType), {
-      message: "Invalid document type",
+      message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
     })
     .optional(),
   status: z
     .string()
     .refine(
       (val) => Object.values(DocStatusType).includes(val as DocStatusType),
-      { message: "Invalid Document Type" },
+      {
+        message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+      },
     )
     .optional(),
   active: z.boolean().optional(),
@@ -54,15 +58,21 @@ export const AddVersionCommandSchema = z.object({
 });
 
 export const ListVersionCommandSchema = z.object({
-  documentId: z.uuid({ message: "Invalid Document Id format" }),
+  documentId: z.uuid({
+    message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+  }),
 });
 
 export const ArchiveDocumentCommandSchema = z.object({
-  documentId: z.uuid({ message: "Invalid Document Id format" }),
+  documentId: z.uuid({
+    message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+  }),
 });
 
 export const SoftDeleteDocumentCommandSchema = z.object({
-  documentId: z.uuid({ message: "Invalid Document Id format" }),
+  documentId: z.uuid({
+    message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+  }),
 });
 
 export const UpdateDocumentCommandSchema = z
@@ -78,7 +88,9 @@ export const UpdateDocumentCommandSchema = z
       .string()
       .refine(
         (val) => Object.values(DocStatusType).includes(val as DocStatusType),
-        { message: "Invalid Document Type" },
+        {
+          message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+        },
       )
       .optional(),
     active: z.boolean().optional(),

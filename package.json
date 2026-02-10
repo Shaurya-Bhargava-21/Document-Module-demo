@@ -7,6 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon --exec tsx ./src/entry/index.ts",
+    "start": "nodemon --exec tsx ./src/entry/server.ts",
     "typeorm": "typeorm-ts-node-esm -d src/app/persistence/data-source.ts",
     "typeorm:create": "typeorm-ts-node-esm",
     "migration:create": "npm run typeorm:create -- migration:create",
@@ -33,6 +34,8 @@
   "homepage": "https://github.com/Shaurya-Bhargava-21/Document-Module-demo#readme",
   "dependencies": {
     "dotenv": "^17.2.3",
+    "fastify": "^5.7.4",
+    "fastify-type-provider-zod": "^6.1.0",
     "nodemon": "^3.1.11",
     "pg": "^8.17.2",
     "reflect-metadata": "^0.2.2",
