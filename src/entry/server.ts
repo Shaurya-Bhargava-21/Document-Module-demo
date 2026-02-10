@@ -18,10 +18,6 @@ fastify.setSerializerCompiler(serializerCompiler);
 
 fastify.register(documentRoutes,{prefix:"/documents"})
 
-fastify.get('/health',async ()=>{
-    return {status:"ok",timestamp :new Date().toISOString()}
-})
-
 async function start(){
     try{
         await AppDataSource.initialize();
