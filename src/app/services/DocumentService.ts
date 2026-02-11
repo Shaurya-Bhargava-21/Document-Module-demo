@@ -77,8 +77,8 @@ export class DocumentService implements IDocumentService {
         : Math.max(...versions.map((v) => v.version)) + 1;
 
     return this.repo.addVersion({
-      documentId: command.documentId,
-      content: command.content,
+      documentId: validatedCommand.documentId,
+      content: validatedCommand.content,
       version: nextVersion,
     });
   }
