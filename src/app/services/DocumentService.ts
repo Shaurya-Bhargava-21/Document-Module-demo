@@ -13,6 +13,9 @@ import {
   DocStatusType,
   type SoftDeleteDocumentCommand,
 } from "../../contracts/states/document.js";
+import { redisClient } from "../../entry/redis.js";
+import { cacheGet } from "../decorators/cacheGet.js";
+import { performanceTracker } from "../decorators/performanceTracker.js";
 
 import { TypeOrmDocRepo } from "../repos/TypeOrmDocRepo.js";
 import {
@@ -28,15 +31,34 @@ import {
 export class DocumentService implements IDocumentService {
   private repo: TypeOrmDocRepo;
 
+  private async invalidateDocumentCache(documentId: string) {
+    await redisClient.del(
+      `getDocument:${JSON.stringify([{ id: documentId }])}`,
+    );
+
+    await redisClient.del(`listVersion:${JSON.stringify([{ documentId }])}`);
+  }
+
+  private async invalidateSearchCache() {
+    const keys = await redisClient.keys("searchDocument:*");
+    if (keys.length > 0) {
+      await redisClient.del(keys);
+    }
+  }
+
   constructor() {
     this.repo = new TypeOrmDocRepo();
   }
 
   async createDocument(command: CreateDocumentCommand): Promise<DocumentState> {
     const validatedCommand = CreateDocumentCommandSchema.parse(command);
-    return this.repo.create(validatedCommand);
+    const doc = this.repo.create(validatedCommand);
+    await this.invalidateSearchCache();
+    return doc;
   }
 
+  @performanceTracker()
+  @cacheGet(300)
   async getDocument(command: GetDocumentCommand): Promise<DocumentState> {
     const validatedCommand = GetDocumentCommandSchema.parse(command);
     const doc = await this.repo.getById(validatedCommand);
@@ -44,6 +66,8 @@ export class DocumentService implements IDocumentService {
     return doc;
   }
 
+  @performanceTracker()
+  @cacheGet(120)
   async searchDocument(
     command: SearchDocumentCommand,
   ): Promise<DocumentState[]> {
@@ -76,13 +100,19 @@ export class DocumentService implements IDocumentService {
         ? 1
         : Math.max(...versions.map((v) => v.version)) + 1;
 
-    return this.repo.addVersion({
+    const newVersion = await this.repo.addVersion({
       documentId: validatedCommand.documentId,
       content: validatedCommand.content,
       version: nextVersion,
     });
+
+    await this.invalidateDocumentCache(validatedCommand.documentId);
+
+    return newVersion;
   }
 
+  @performanceTracker()
+  @cacheGet(300)
   async listVersion(
     command: ListVersionCommand,
   ): Promise<DocumentVersionState[]> {
@@ -104,6 +134,8 @@ export class DocumentService implements IDocumentService {
     }
 
     await this.repo.archive(validatedCommand);
+    await this.invalidateDocumentCache(validatedCommand.documentId);
+    await this.invalidateSearchCache();
   }
 
   async softDeleteDocument(command: SoftDeleteDocumentCommand): Promise<void> {
@@ -116,5 +148,7 @@ export class DocumentService implements IDocumentService {
       throw DocumentErrors.NOT_FOUND();
     }
     await this.repo.softDelete(command);
+    await this.invalidateDocumentCache(validatedCommand.documentId);
+    await this.invalidateSearchCache();
   }
 }
