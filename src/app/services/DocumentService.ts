@@ -72,7 +72,9 @@ export class DocumentService implements IDocumentService {
     command: SearchDocumentCommand,
   ): Promise<DocumentState[]> {
     const validatedCommand = SearchDocumentCommandSchema.parse(command);
-
+    if (validatedCommand.status === DocStatusType.DELETED) {
+      throw DocumentErrors.DELETED();
+    }
     return this.repo.search(validatedCommand as SearchDocumentCommand);
   }
 

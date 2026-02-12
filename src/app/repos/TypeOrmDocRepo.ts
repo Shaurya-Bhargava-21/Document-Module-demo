@@ -17,7 +17,6 @@ import { DocumentVersionEntity } from "../persistence/entities/DocumentVersionEn
 import { AppDataSource } from "../persistence/data-source.js";
 import { DocumentEntity } from "../persistence/entities/DocumentEntity.js";
 
-
 export class TypeOrmDocRepo {
   private docRepo: Repository<DocumentEntity>;
   private versionRepo: Repository<DocumentVersionEntity>;
@@ -81,6 +80,18 @@ export class TypeOrmDocRepo {
       qb.andWhere("d.title ILIKE :q", {
         q: `%${command.query}%`,
       });
+    }
+
+    if (command.type) {
+      qb.andWhere("d.type = :type", {
+        type: command.type,
+      });
+    }
+
+    if(command.status){
+      qb.andWhere("d.status = :status",{
+        status:command.status
+      })
     }
 
     if (command.active !== undefined) {

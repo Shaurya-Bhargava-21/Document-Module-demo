@@ -32,21 +32,27 @@ export const SearchDocumentCommandSchema = z.object({
     .optional(),
   status: z
     .string()
+    .transform(v=>v.toUpperCase())
     .refine(
       (val) => Object.values(DocStatusType).includes(val as DocStatusType),
       {
-        message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+        message: `Invalid document type. Valid types are: ${Object.values(DocStatusType).join(", ")}`,
       },
     )
     .optional(),
-  active: z.boolean().optional(),
-  limit: z
+  active: z
+    .union([
+      z.boolean(),
+      z.enum(["true", "false"]).transform((v) => v === "true"),
+    ])
+    .optional(),
+  limit: z.coerce
     .number()
     .int()
     .positive()
     .max(100, "Limit cannot exceed 100")
     .default(10),
-  offset: z.number().int().nonnegative().default(0),
+  offset: z.coerce.number().int().nonnegative().default(0),
 });
 
 export const AddVersionCommandSchema = z.object({

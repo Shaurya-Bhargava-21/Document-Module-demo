@@ -1,4 +1,4 @@
-import Fastify from "fastify";
+import Fastify, { type FastifyError } from "fastify";
 import { AppDataSource } from "../app/persistence/data-source.js";
 import { documentRoutes } from "./routes/documents.js";
 import {
@@ -16,6 +16,14 @@ const fastify = Fastify({
 fastify.setValidatorCompiler(validatorCompiler);
 fastify.setSerializerCompiler(serializerCompiler);
 
+fastify.setErrorHandler((error:FastifyError, request, reply) => {
+  const statusCode = error.statusCode ?? 500;
+  reply.code(statusCode).send({
+    statusCode,
+    code: error.code ?? "INTERNAL_ERROR",
+    error: error.message,
+  });
+});
 
 fastify.register(documentRoutes,{prefix:"/documents"})
 
