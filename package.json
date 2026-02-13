@@ -33,6 +33,8 @@
   },
   "homepage": "https://github.com/Shaurya-Bhargava-21/Document-Module-demo#readme",
   "dependencies": {
+    "@fastify/swagger": "^9.7.0",
+    "@fastify/swagger-ui": "^5.2.5",
     "dotenv": "^17.2.3",
     "fastify": "^5.7.4",
     "fastify-type-provider-zod": "^6.1.0",

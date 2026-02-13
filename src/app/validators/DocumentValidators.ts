@@ -26,13 +26,14 @@ export const SearchDocumentCommandSchema = z.object({
   query: z.string().max(100).optional(),
   type: z
     .string()
+    .transform((v) => v.toUpperCase())
     .refine((val) => Object.values(DocType).includes(val as DocType), {
       message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
     })
     .optional(),
   status: z
     .string()
-    .transform(v=>v.toUpperCase())
+    .transform((v) => v.toUpperCase())
     .refine(
       (val) => Object.values(DocStatusType).includes(val as DocStatusType),
       {
