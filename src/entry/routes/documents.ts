@@ -54,11 +54,7 @@ export const documentRoutes: FastifyPluginAsync = async (
       },
     },
     async (req) => {
-      return service.searchDocument({
-        ...req.query,
-        limit: req.query.limit ?? 10,
-        offset: req.query.offset ?? 0,
-      });
+      return service.searchDocument(req.query);
     },
   );
 
