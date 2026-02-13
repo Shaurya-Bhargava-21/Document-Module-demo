@@ -111,7 +111,3 @@ export const UpdateDocumentCommandSchema = z
       message: "At least one field (title, status, or active) must be provided",
     },
   );
-
-export type SearchDocumentCommandValidated = z.infer<
-  typeof SearchDocumentCommandSchema
->;
