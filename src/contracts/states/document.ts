@@ -67,6 +67,7 @@ export interface ArchiveDocumentCommand {
 
 export interface IServiceError {
   code: string;
+  statusCode:number;
   message: string;
   details?: unknown;
 }
