@@ -15,6 +15,7 @@ import {
 } from "../../contracts/states/document.js";
 import { redisClient } from "../../entry/redis.js";
 import { cacheGet } from "../decorators/cacheGet.js";
+import { cachePurge } from "../decorators/cachePurge.js";
 import { performanceTracker } from "../decorators/performanceTracker.js";
 
 import { TypeOrmDocRepo } from "../repos/TypeOrmDocRepo.js";
@@ -31,29 +32,14 @@ import {
 export class DocumentService implements IDocumentService {
   private repo: TypeOrmDocRepo;
 
-  private async invalidateDocumentCache(documentId: string) {
-    await redisClient.del(
-      `getDocument:${JSON.stringify([{ id: documentId }])}`,
-    );
-
-    await redisClient.del(`listVersion:${JSON.stringify([{ documentId }])}`);
-  }
-
-  private async invalidateSearchCache() {
-    const keys = await redisClient.keys("searchDocument:*");
-    if (keys.length > 0) {
-      await redisClient.del(keys);
-    }
-  }
-
   constructor() {
     this.repo = new TypeOrmDocRepo();
   }
 
+  @cachePurge(["searchDocument"])
   async createDocument(command: CreateDocumentCommand): Promise<DocumentState> {
     const validatedCommand = CreateDocumentCommandSchema.parse(command);
     const doc = this.repo.create(validatedCommand);
-    await this.invalidateSearchCache();
     return doc;
   }
 
@@ -78,6 +64,7 @@ export class DocumentService implements IDocumentService {
     return this.repo.search(validatedCommand as SearchDocumentCommand);
   }
 
+  @cachePurge(["getDocument", "listVersion"])
   async addVersion(command: AddVersionCommand): Promise<DocumentVersionState> {
     const validatedCommand = AddVersionCommandSchema.parse(command);
 
@@ -108,8 +95,6 @@ export class DocumentService implements IDocumentService {
       version: nextVersion,
     });
 
-    await this.invalidateDocumentCache(validatedCommand.documentId);
-
     return newVersion;
   }
 
@@ -122,6 +107,7 @@ export class DocumentService implements IDocumentService {
     return this.repo.listVersions(validatedCommand);
   }
 
+  @cachePurge(["getDocument", "listVersion", "searchDocument"])
   async archiveDocument(command: ArchiveDocumentCommand): Promise<void> {
     const validatedCommand = ArchiveDocumentCommandSchema.parse(command);
 
@@ -136,10 +122,9 @@ export class DocumentService implements IDocumentService {
     }
 
     await this.repo.archive(validatedCommand);
-    await this.invalidateDocumentCache(validatedCommand.documentId);
-    await this.invalidateSearchCache();
   }
 
+  @cachePurge(["getDocument", "listVersion", "searchDocument"])
   async softDeleteDocument(command: SoftDeleteDocumentCommand): Promise<void> {
     const validatedCommand = SoftDeleteDocumentCommandSchema.parse(command);
 
@@ -150,7 +135,5 @@ export class DocumentService implements IDocumentService {
       throw DocumentErrors.NOT_FOUND();
     }
     await this.repo.softDelete(command);
-    await this.invalidateDocumentCache(validatedCommand.documentId);
-    await this.invalidateSearchCache();
   }
 }
