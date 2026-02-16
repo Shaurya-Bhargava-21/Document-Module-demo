@@ -1,6 +1,12 @@
 import z from "zod";
 import { DocStatusType, DocType } from "../../contracts/states/document.js";
 
+const docTypeValues = Object.values(DocType) as [DocType, ...DocType[]];
+const docStatusValues = Object.values(DocStatusType) as [
+  DocStatusType,
+  ...DocStatusType[],
+];
+
 export const CreateDocumentCommandSchema = z.object({
   title: z
     .string()
@@ -8,14 +14,9 @@ export const CreateDocumentCommandSchema = z.object({
     .max(200, "title must be less than 200 characters")
     .trim(),
 
-  type: z
-    .string()
-    .refine(
-      (val): val is DocType => Object.values(DocType).includes(val as DocType),
-      {
-        message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
-      },
-    ),
+  type: z.enum(docTypeValues, {
+    error: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+  }),
 });
 
 export const GetDocumentCommandSchema = z.object({
@@ -25,21 +26,14 @@ export const GetDocumentCommandSchema = z.object({
 export const SearchDocumentCommandSchema = z.object({
   query: z.string().max(100).optional(),
   type: z
-    .string()
-    .transform((v) => v.toUpperCase())
-    .refine((val) => Object.values(DocType).includes(val as DocType), {
-      message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+    .enum(docTypeValues, {
+      error: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
     })
     .optional(),
   status: z
-    .string()
-    .transform((v) => v.toUpperCase())
-    .refine(
-      (val) => Object.values(DocStatusType).includes(val as DocStatusType),
-      {
-        message: `Invalid document type. Valid types are: ${Object.values(DocStatusType).join(", ")}`,
-      },
-    )
+    .enum(docStatusValues, {
+      error: `Invalid status. Valid statuses are: ${Object.values(DocStatusType).join(", ")}`,
+    })
     .optional(),
   active: z
     .union([
@@ -97,13 +91,9 @@ export const UpdateDocumentCommandSchema = z
       .trim()
       .optional(),
     status: z
-      .string()
-      .refine(
-        (val) => Object.values(DocStatusType).includes(val as DocStatusType),
-        {
-          message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
-        },
-      )
+      .enum(docStatusValues, {
+        error: `Invalid status. Valid statuses are: ${Object.values(DocStatusType).join(", ")}`,
+      })
       .optional(),
     active: z.boolean().optional(),
   })
