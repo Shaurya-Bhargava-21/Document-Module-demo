@@ -5,10 +5,12 @@ import {
   type AddVersionCommand,
   type ArchiveDocumentCommand,
   type CreateDocumentCommand,
+  type DocumentState,
   type GetDocumentCommand,
   type ListVersionCommand,
   type SearchDocumentCommand,
   type SoftDeleteDocumentCommand,
+  type UnArchiveDocumentCommand,
 } from "../../contracts/states/document.js";
 
 import { InMemoryDocRepo } from "../repos/InMemoryDocRepo.js";
@@ -66,6 +68,14 @@ export class InMemoryDocService implements IDocumentService {
     });
     if (!doc) throw DocumentErrors.NOT_FOUND();
     await this.repo.archive(command);
+  }
+
+  async unarchiveDocument(command: UnArchiveDocumentCommand): Promise<void> {
+    const doc = await this.repo.getById({
+      id:command.documentId
+    });
+    if (!doc) throw DocumentErrors.NOT_FOUND();
+    await this.repo.unarchive(command);
   }
 
   async softDeleteDocument(command: SoftDeleteDocumentCommand) {

@@ -75,6 +75,11 @@ export const ArchiveDocumentCommandSchema = z.object({
     message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
   }),
 });
+export const UnArchiveDocumentCommandSchema = z.object({
+  documentId: z.uuid({
+    message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+  }),
+});
 
 export const SoftDeleteDocumentCommandSchema = z.object({
   documentId: z.uuid({

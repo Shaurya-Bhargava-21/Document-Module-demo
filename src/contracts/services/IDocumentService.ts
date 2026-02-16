@@ -8,6 +8,7 @@ import type {
   ListVersionCommand,
   ArchiveDocumentCommand,
   SoftDeleteDocumentCommand,
+  UnArchiveDocumentCommand,
 } from "../states/document.js";
 
 export interface IDocumentService {
@@ -17,6 +18,7 @@ export interface IDocumentService {
   addVersion(command:AddVersionCommand):Promise<DocumentVersionState>;
   listVersion(command:ListVersionCommand):Promise<DocumentVersionState[]>;
   archiveDocument(command:ArchiveDocumentCommand):Promise<void>;
+  unarchiveDocument(command:UnArchiveDocumentCommand):Promise<void>;
   softDeleteDocument(command:SoftDeleteDocumentCommand):Promise<void>;
 }
 

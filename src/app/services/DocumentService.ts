@@ -12,6 +12,7 @@ import {
   type ArchiveDocumentCommand,
   DocStatusType,
   type SoftDeleteDocumentCommand,
+  type UnArchiveDocumentCommand,
 } from "../../contracts/states/document.js";
 import { redisClient } from "../../entry/redis.js";
 import { cacheGet } from "../decorators/cacheGet.js";
@@ -27,6 +28,7 @@ import {
   ListVersionCommandSchema,
   SearchDocumentCommandSchema,
   SoftDeleteDocumentCommandSchema,
+  UnArchiveDocumentCommandSchema,
 } from "../validators/DocumentValidators.js";
 
 export class DocumentService implements IDocumentService {
@@ -39,7 +41,7 @@ export class DocumentService implements IDocumentService {
   @cachePurge(["searchDocument"])
   async createDocument(command: CreateDocumentCommand): Promise<DocumentState> {
     const validatedCommand = CreateDocumentCommandSchema.parse(command);
-    const doc = this.repo.create(validatedCommand);
+    const doc = await this.repo.create(validatedCommand);
     return doc;
   }
 
@@ -121,7 +123,28 @@ export class DocumentService implements IDocumentService {
       });
     }
 
+    if (!doc.active) throw DocumentErrors.ARCHIVED();
+
     await this.repo.archive(validatedCommand);
+  }
+
+  @cachePurge(["getDocument", "listVersion", "searchDocument"])
+  async unarchiveDocument(command: UnArchiveDocumentCommand): Promise<void> {
+    const validatedCommand = UnArchiveDocumentCommandSchema.parse(command);
+
+    const doc = await this.repo.getById({
+      id: validatedCommand.documentId,
+    });
+
+    if (!doc) {
+      throw DocumentErrors.NOT_FOUND({
+        documentId: validatedCommand.documentId,
+      });
+    }
+
+    if (doc.active) throw DocumentErrors.ALREADY_ACTIVE();
+
+    await this.repo.unarchive(validatedCommand);
   }
 
   @cachePurge(["getDocument", "listVersion", "searchDocument"])
@@ -134,6 +157,6 @@ export class DocumentService implements IDocumentService {
     if (!doc) {
       throw DocumentErrors.NOT_FOUND();
     }
-    await this.repo.softDelete(command);
+    await this.repo.softDelete(validatedCommand);
   }
 }

@@ -10,6 +10,7 @@ import type {
   ListVersionCommand,
   SearchDocumentCommand,
   SoftDeleteDocumentCommand,
+  UnArchiveDocumentCommand,
 } from "../../contracts/states/document.js";
 import {
   AddVersionCommandSchema,
@@ -19,13 +20,12 @@ import {
   ListVersionCommandSchema,
   SearchDocumentCommandSchema,
   SoftDeleteDocumentCommandSchema,
+  UnArchiveDocumentCommandSchema,
 } from "../../app/validators/DocumentValidators.js";
 
-export const documentRoutes: FastifyPluginAsync = async (
-  app,
-) => {
+export const documentRoutes: FastifyPluginAsync = async (app) => {
   let service: IDocumentService = new DocumentService();
-//   service = new InMemoryDocService();
+  //   service = new InMemoryDocService();
 
   //create document
   app.post<{
@@ -123,6 +123,22 @@ export const documentRoutes: FastifyPluginAsync = async (
     async (req) => {
       await service.archiveDocument(req.params);
       return { message: "Document Archived" };
+    },
+  );
+
+  //unarchive document
+  app.patch<{
+    Params: UnArchiveDocumentCommand;
+  }>(
+    "/:documentId/unarchive",
+    {
+      schema: {
+        params: UnArchiveDocumentCommandSchema,
+      },
+    },
+    async (req) => {
+      await service.unarchiveDocument(req.params);
+      return { message: "Document Unarchived" };
     },
   );
 

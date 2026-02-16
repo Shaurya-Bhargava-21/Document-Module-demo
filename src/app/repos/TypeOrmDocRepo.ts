@@ -11,6 +11,7 @@ import {
   type ListVersionCommand,
   type SearchDocumentCommand,
   type SoftDeleteDocumentCommand,
+  type UnArchiveDocumentCommand,
   type UpdateDocumentCommand,
 } from "../../contracts/states/document.js";
 import { DocumentVersionEntity } from "../persistence/entities/DocumentVersionEntity.js";
@@ -123,6 +124,17 @@ export class TypeOrmDocRepo {
 
     doc.active = false;
     doc.status = DocStatusType.DRAFT;
+    await this.docRepo.save(doc);
+  }
+
+  async unarchive(command:UnArchiveDocumentCommand):Promise<void>{
+    const doc = await this.docRepo.findOne({
+      where: { id: command.documentId },
+    });
+    if (!doc) return;
+
+    doc.active = true;
+    doc.status = DocStatusType.PUBLISHED;
     await this.docRepo.save(doc);
   }
 

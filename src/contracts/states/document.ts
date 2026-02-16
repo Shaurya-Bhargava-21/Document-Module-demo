@@ -65,6 +65,10 @@ export interface ArchiveDocumentCommand {
   documentId: string;
 }
 
+export interface UnArchiveDocumentCommand{
+  documentId:string;
+}
+
 export interface IServiceError {
   code: string;
   statusCode:number;

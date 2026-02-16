@@ -32,7 +32,11 @@ export class InitialSchema1770198074143 implements MigrationInterface {
         "content" text NOT NULL,
         "createdAt" TIMESTAMP NOT NULL DEFAULT now(),
         "documentId" uuid,
-        CONSTRAINT "PK_documentversions" PRIMARY KEY ("id")
+        CONSTRAINT "PK_documentversions" PRIMARY KEY ("id"),
+        CONSTRAINT "FK_documentversions_documentId"
+        FOREIGN KEY ("documentId")
+        REFERENCES "documents"("id")
+        ON DELETE CASCADE
       )
     `);
   }

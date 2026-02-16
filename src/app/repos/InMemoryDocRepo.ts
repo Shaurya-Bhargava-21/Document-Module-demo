@@ -9,6 +9,7 @@ import {
   type ListVersionCommand,
   type SearchDocumentCommand,
   type SoftDeleteDocumentCommand,
+  type UnArchiveDocumentCommand,
   type UpdateDocumentCommand,
 } from "../../contracts/states/document.js";
 
@@ -87,6 +88,16 @@ export class InMemoryDocRepo {
     if (!doc) return;
 
     doc.active = false;
+    doc.status = DocStatusType.DRAFT;
+    doc.updatedAt = new Date();
+  }
+
+  async unarchive(command:UnArchiveDocumentCommand):Promise<void>{
+    const doc = this.documents.find((d) => d.id === command.documentId);
+    if (!doc) return;
+
+    doc.active = true;
+    doc.status = DocStatusType.PUBLISHED;
     doc.updatedAt = new Date();
   }
 
