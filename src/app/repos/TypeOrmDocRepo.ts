@@ -17,6 +17,7 @@ import {
 import { DocumentVersionEntity } from "../persistence/entities/DocumentVersionEntity.js";
 import { AppDataSource } from "../persistence/data-source.js";
 import { DocumentEntity } from "../persistence/entities/DocumentEntity.js";
+import { DocumentErrors } from "../../contracts/errors/DocumentError.js";
 
 export class TypeOrmDocRepo {
   private docRepo: Repository<DocumentEntity>;
@@ -169,7 +170,7 @@ export class TypeOrmDocRepo {
         relations: ["document"],
       });
     if (!fullVersionWithDocument)
-      throw new Error("Version not found after save");
+      throw DocumentErrors.NOT_FOUND({ documentId: command.documentId });
 
     return this.toVersionState(fullVersionWithDocument);
   }

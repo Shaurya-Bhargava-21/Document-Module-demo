@@ -21,7 +21,7 @@ import {
   SearchDocumentCommandSchema,
   SoftDeleteDocumentCommandSchema,
   UnArchiveDocumentCommandSchema,
-} from "../../app/validators/DocumentValidators.js";
+} from "../../contracts/validators/DocumentValidators.js";
 
 export const documentRoutes: FastifyPluginAsync = async (app) => {
   let service: IDocumentService = new DocumentService();

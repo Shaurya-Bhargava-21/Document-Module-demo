@@ -29,7 +29,7 @@ import {
   SearchDocumentCommandSchema,
   SoftDeleteDocumentCommandSchema,
   UnArchiveDocumentCommandSchema,
-} from "../validators/DocumentValidators.js";
+} from "../../contracts/validators/DocumentValidators.js";
 
 export class DocumentService implements IDocumentService {
   private repo: TypeOrmDocRepo;
