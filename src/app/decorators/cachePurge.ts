@@ -8,18 +8,22 @@ export function cachePurge(prefixes: string[]) {
 
       for (const prefix of prefixes) {
         let cursor = "0";
-        do {
-          const reply = await redisClient.scan(cursor, {
-            MATCH: `${prefix}:*`,
-            COUNT: 100,
-          });
-          cursor = reply.cursor;
-          const keys = reply.keys;
-
-          if (keys.length > 0) {
-            await redisClient.del(keys);
-          }
-        } while (cursor !== "0");
+        try {
+          do {
+            const reply = await redisClient.scan(cursor, {
+              MATCH: `${target.constructor.name}:${prefix}:*`,
+              COUNT: 100,
+            });
+            cursor = reply.cursor;
+            const keys = reply.keys;
+  
+            if (keys.length > 0) {
+              await redisClient.del(keys);
+            }
+          } while (cursor !== "0");
+        } catch (err) {
+          console.error(`\nCache purge failed for prefix ${prefix}:`,err,"\n");
+        }
       }
 
       return result;
