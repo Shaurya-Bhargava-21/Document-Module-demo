@@ -1,26 +1,34 @@
 services:
+  # PostgreSQL - primary database
+  # accessible at localhost:5433 from your machine
+  # connects to DB_HOST=localhost, DB_PORT=5433 in .env
   postgres:
     image: postgres:latest
     container_name: postgres
     restart: always
     ports:
-      - "5433:5432"
+      - "5433:5432" # your machine:5433 → container:5432
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin123
       POSTGRES_DB: mydb
     volumes:
-      - postgres-data:/var/lib/postgresql
+      - postgres-data:/var/lib/postgresql # data persists between restarts
 
+  # Redis - caching layer
+  # accessible at localhost:6379 from your machine
+  # connects to REDIS_HOST=localhost, REDIS_PORT=6379 in .env
   redis:
     image: redis:7
     container_name: document-redis
     restart: always
     ports:
-      - "6379:6379"
+      - "6379:6379" # same port inside and outside
     volumes:
-      - redis_volume_data:/data
+      - redis_volume_data:/data # data persists between restarts
 
+  # RedisInsight - web UI for Redis
+  # open http://localhost:8001 to view redis keys, values, TTLs
   redis_insight:
     image: redislabs/redisinsight:1.14.0
     container_name: redis_insight
@@ -30,10 +38,60 @@ services:
     volumes:
       - redis_insight_volume_data:/db
 
+  # Zookeeper - internal manager for Kafka
+  # you never interact with this directly
+  # kafka needs it running to coordinate itself
+  # heartbeat every 2000ms to check if kafka is alive
+  # using confluentinc image for native ARM64 support (Apple Silicon)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: zookeeper
+    restart: always
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000 # heartbeat interval in milliseconds
+
+  # Kafka - message queue
+  # two listeners:
+  #   PLAINTEXT_INTERNAL://kafka:29092 → used by other containers inside docker network (kafdrop)
+  #   PLAINTEXT://localhost:9092 → used by your Node.js app from outside docker
+  # connects to KAFKA_BROKER=localhost:9092 in .env
+  # using confluentinc image for native ARM64 support (Apple Silicon)
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: kafka
+    restart: always
+    depends_on:
+      - zookeeper # zookeeper must start before kafka
+    ports:
+      - "9092:9092" # your machine:9092 → container:9092
+    environment:
+      KAFKA_BROKER_ID: 1 # unique ID for this kafka server
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181 # where to find zookeeper
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL # containers talk to each other on PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 # set to 1 since we only have a single kafka broker
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+  # Kafdrop - web UI for Kafka
+  # open http://localhost:9000 to view topics, messages, consumers
+  # connects to kafka using PLAINTEXT_INTERNAL port (kafka:29092) since both are in docker network
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    container_name: kafdrop
+    restart: always
+    depends_on:
+      - kafka # kafka must start before kafdrop
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "kafka:29092" # internal docker network address
+
 volumes:
   postgres-data:
-    external: true
-
-  redis_volume_data:
-
-  redis_insight_volume_data:
+    external: true # created manually with: docker volume create postgres-data
+  redis_volume_data: # created automatically by docker-compose
+  redis_insight_volume_data: # created automatically by docker-compose

@@ -25,8 +25,8 @@ import {
 import { DocumentController } from "../../app/controllers/DocumentController.js";
 
 export const documentRoutes: FastifyPluginAsync = async (app) => {
-  let service = new DocumentService();
-  //   service = new InMemoryDocService();
+  let service:IDocumentService= new DocumentService();
+    // service = new InMemoryDocService();
   const controller = new DocumentController(service);
 
   // create document

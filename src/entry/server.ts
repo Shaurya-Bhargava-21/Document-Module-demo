@@ -10,6 +10,9 @@ import {
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
 import {connectRedis} from './redis.js'
+import { connectKafka } from "./kafka.js";
+import { DocumentListener } from "../app/listeners/DocumentListener.js";
+import { VersionListener } from "../app/listeners/VersionListener.js";
 
 const fastify = Fastify({
     logger:true
@@ -47,13 +50,22 @@ fastify.register(documentRoutes,{prefix:"/documents"})
 
 async function start(){
     try{
-        await AppDataSource.initialize();
-        console.log("Database connected")
-        
-        await connectRedis();
+      await AppDataSource.initialize();
+      console.log("Database connected");
 
-        await fastify.listen({port:4000})
-        console.log("server running on port 4000")
+      await connectRedis();
+      await connectKafka();
+
+      const documentListener = new DocumentListener();
+      await documentListener.start();
+      console.log("Kafka document listener started");
+
+      const versionListener = new VersionListener();
+      await versionListener.start();
+      console.log("Kafka version listener started");
+
+      await fastify.listen({ port: 4000 });
+      console.log("server running on port 4000");
     }
     catch(err){
         fastify.log.error(err);

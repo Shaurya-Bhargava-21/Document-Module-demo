@@ -30,18 +30,22 @@ import {
   SoftDeleteDocumentCommandSchema,
   UnArchiveDocumentCommandSchema,
 } from "../../contracts/validators/DocumentValidators.js";
+import { DocumentProducer } from "../producers/DocumentProducer.js";
 
 export class DocumentService implements IDocumentService {
   private repo: TypeOrmDocRepo;
+  private documentProducer: DocumentProducer;
 
   constructor() {
     this.repo = new TypeOrmDocRepo();
+    this.documentProducer = new DocumentProducer();
   }
 
   @cachePurge(["searchDocument"])
   async createDocument(command: CreateDocumentCommand): Promise<DocumentState> {
     const validatedCommand = CreateDocumentCommandSchema.parse(command);
     const doc = await this.repo.create(validatedCommand);
+    await this.documentProducer.documentCreated(doc);
     return doc;
   }
 
@@ -97,6 +101,8 @@ export class DocumentService implements IDocumentService {
       version: nextVersion,
     });
 
+    await this.documentProducer.versionAdded(newVersion)
+
     return newVersion;
   }
 
@@ -126,6 +132,12 @@ export class DocumentService implements IDocumentService {
     if (!doc.active) throw DocumentErrors.ARCHIVED();
 
     await this.repo.archive(validatedCommand);
+
+    await this.documentProducer.documentArchived({
+      ...doc,
+      active: false,
+      status: DocStatusType.DRAFT,
+    });
   }
 
   @cachePurge(["getDocument", "listVersion", "searchDocument"])
@@ -145,6 +157,11 @@ export class DocumentService implements IDocumentService {
     if (doc.active) throw DocumentErrors.ALREADY_ACTIVE();
 
     await this.repo.unarchive(validatedCommand);
+    await this.documentProducer.documentUnArchived({
+      ...doc,
+      active: true,
+      status: DocStatusType.PUBLISHED,
+    });
   }
 
   @cachePurge(["getDocument", "listVersion", "searchDocument"])
@@ -158,5 +175,10 @@ export class DocumentService implements IDocumentService {
       throw DocumentErrors.NOT_FOUND();
     }
     await this.repo.softDelete(validatedCommand);
+    await this.documentProducer.documentDeleted({
+      ...doc,
+      active: false,
+      status: DocStatusType.DELETED,
+    });
   }
 }
