@@ -1,6 +1,6 @@
 import Fastify, { type FastifyError } from "fastify";
 import { AppDataSource } from "../app/persistence/data-source.js";
-import { documentRoutes } from "./routes/documents.js";
+import { documentRoutes } from "./routes/documentRoutes.js";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import {
