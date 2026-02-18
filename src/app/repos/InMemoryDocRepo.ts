@@ -1,5 +1,5 @@
 import {
-  DocStatusType,
+  DocumentStatusType,
   type AddVersionRepoCommand,
   type ArchiveDocumentCommand,
   type CreateDocumentCommand,
@@ -41,7 +41,7 @@ export class InMemoryDocRepo {
       id: this.generateId(),
       title: command.title,
       type: command.type,
-      status: DocStatusType.PUBLISHED,
+      status: DocumentStatusType.PUBLISHED,
       active: true,
       createdAt: now,
       updatedAt: now,
@@ -54,7 +54,7 @@ export class InMemoryDocRepo {
 
   async getById(command: GetDocumentCommand): Promise<DocumentState | null> {
     const doc = this.documents.find(
-      (d) => d.id === command.id && d.status !== DocStatusType.DELETED,
+      (d) => d.id === command.id && d.status !== DocumentStatusType.DELETED,
     );
     if (!doc) return null;
 
@@ -63,7 +63,7 @@ export class InMemoryDocRepo {
 
   async search(command: SearchDocumentCommand): Promise<DocumentState[]> {
     let result = this.documents.filter(
-      (d) => d.status !== DocStatusType.DELETED,
+      (d) => d.status !== DocumentStatusType.DELETED,
     );
 
     if (command.query !== null) {
@@ -102,7 +102,7 @@ export class InMemoryDocRepo {
     if (!doc) return;
 
     doc.active = false;
-    doc.status = DocStatusType.DRAFT;
+    doc.status = DocumentStatusType.DRAFT;
     doc.updatedAt = new Date();
   }
 
@@ -111,7 +111,7 @@ export class InMemoryDocRepo {
     if (!doc) return;
 
     doc.active = true;
-    doc.status = DocStatusType.PUBLISHED;
+    doc.status = DocumentStatusType.PUBLISHED;
     doc.updatedAt = new Date();
   }
 
@@ -119,7 +119,7 @@ export class InMemoryDocRepo {
     const doc = this.documents.find((d) => d.id === command.documentId);
     if (!doc) return;
 
-    doc.status = DocStatusType.DELETED;
+    doc.status = DocumentStatusType.DELETED;
     doc.active = false;
     doc.updatedAt = new Date();
   }

@@ -1,5 +1,5 @@
 import { DocumentService } from "../app/services/DocumentService.js";
-import { DocType, type SearchDocumentCommand } from "../contracts/states/document.js";
+import { DocumentType, type SearchDocumentCommand } from "../contracts/states/document.js";
 import { InMemoryDocService } from "../app/services/InMemoryDocService.js";
 import type { IDocumentService } from "../contracts/services/IDocumentService.js";
 import { AppDataSource } from "../app/persistence/data-source.js";
@@ -33,7 +33,7 @@ async function main() {
   console.log("\n1. Testing createDocument\n");
   const doc = await documentService.createDocument({
     title: "Test Document",
-    type: DocType.PDF,
+    type: DocumentType.PDF,
   });
   console.log("Document created:", doc.id);
 
@@ -106,7 +106,7 @@ async function main() {
   );
   const doc2 = await documentService.createDocument({
     title: "Document to Delete",
-    type: DocType.TXT,
+    type: DocumentType.TXT,
   });
   console.log("Document created:", doc2.id);
 

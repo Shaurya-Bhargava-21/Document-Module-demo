@@ -8,7 +8,7 @@ import {
 } from "typeorm";
 
 import { DocumentVersionEntity } from "./DocumentVersionEntity.js";
-import { DocStatusType, DocType } from "../../../contracts/states/document.js";
+import { DocumentStatusType, DocumentType } from "../../../contracts/states/document.js";
 
 @Entity("documents")
 export class DocumentEntity {
@@ -18,15 +18,15 @@ export class DocumentEntity {
   @Column("varchar")
   title: string;
 
-  @Column({ type: "enum", enum: DocType })
-  type: DocType;
+  @Column({ type: "enum", enum: DocumentType })
+  type: DocumentType;
 
   @Column({
     type: "enum",
-    enum: DocStatusType,
-    default: DocStatusType.PUBLISHED,
+    enum: DocumentStatusType,
+    default: DocumentStatusType.PUBLISHED,
   })
-  status: DocStatusType;
+  status: DocumentStatusType;
 
   @Column({ type: "boolean", default: true })
   active: boolean;

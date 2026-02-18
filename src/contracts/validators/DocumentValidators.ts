@@ -1,10 +1,10 @@
 import z from "zod";
-import { DocStatusType, DocType } from "../../contracts/states/document.js";
+import { DocumentStatusType, DocumentType } from "../../contracts/states/document.js";
 
-const docTypeValues = Object.values(DocType) as [DocType, ...DocType[]];
-const docStatusValues = Object.values(DocStatusType) as [
-  DocStatusType,
-  ...DocStatusType[],
+const DocumentTypeValues = Object.values(DocumentType) as [DocumentType, ...DocumentType[]];
+const docStatusValues = Object.values(DocumentStatusType) as [
+  DocumentStatusType,
+  ...DocumentStatusType[],
 ];
 
 export const CreateDocumentCommandSchema = z.object({
@@ -14,8 +14,8 @@ export const CreateDocumentCommandSchema = z.object({
     .max(200, "title must be less than 200 characters")
     .trim(),
 
-  type: z.enum(docTypeValues, {
-    error: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+  type: z.enum(DocumentTypeValues, {
+    error: `Invalid document type. Valid types are: ${Object.values(DocumentType).join(", ")}`,
   }),
 });
 
@@ -26,14 +26,14 @@ export const GetDocumentCommandSchema = z.object({
 export const SearchDocumentCommandSchema = z.object({
   query: z.string().max(100).nullable().default(null),
   type: z
-    .enum(docTypeValues, {
-      error: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+    .enum(DocumentTypeValues, {
+      error: `Invalid document type. Valid types are: ${Object.values(DocumentType).join(", ")}`,
     })
     .nullable()
     .default(null),
   status: z
     .enum(docStatusValues, {
-      error: `Invalid status. Valid statuses are: ${Object.values(DocStatusType).join(", ")}`,
+      error: `Invalid status. Valid statuses are: ${Object.values(DocumentStatusType).join(", ")}`,
     })
     .nullable()
     .default(null),
@@ -63,24 +63,24 @@ export const AddVersionCommandSchema = z.object({
 
 export const ListVersionCommandSchema = z.object({
   documentId: z.uuid({
-    message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+    message: `Invalid document type. Valid types are: ${Object.values(DocumentType).join(", ")}`,
   }),
 });
 
 export const ArchiveDocumentCommandSchema = z.object({
   documentId: z.uuid({
-    message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+    message: `Invalid document type. Valid types are: ${Object.values(DocumentType).join(", ")}`,
   }),
 });
 export const UnArchiveDocumentCommandSchema = z.object({
   documentId: z.uuid({
-    message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+    message: `Invalid document type. Valid types are: ${Object.values(DocumentType).join(", ")}`,
   }),
 });
 
 export const SoftDeleteDocumentCommandSchema = z.object({
   documentId: z.uuid({
-    message: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
+    message: `Invalid document type. Valid types are: ${Object.values(DocumentType).join(", ")}`,
   }),
 });
 
@@ -96,7 +96,7 @@ export const UpdateDocumentCommandSchema = z
       .default(null),
     status: z
       .enum(docStatusValues, {
-        error: `Invalid status. Valid statuses are: ${Object.values(DocStatusType).join(", ")}`,
+        error: `Invalid status. Valid statuses are: ${Object.values(DocumentStatusType).join(", ")}`,
       })
       .nullable()
       .default(null),

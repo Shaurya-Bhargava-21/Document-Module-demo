@@ -1,7 +1,7 @@
 import { Not, Repository } from "typeorm";
 
 import {
-  DocStatusType,
+  DocumentStatusType,
   type AddVersionRepoCommand,
   type ArchiveDocumentCommand,
   type CreateDocumentCommand,
@@ -69,7 +69,7 @@ export class TypeOrmDocRepo {
     const doc = await this.docRepo.findOne({
       where: {
         id: command.id,
-        status: Not(DocStatusType.DELETED),
+        status: Not(DocumentStatusType.DELETED),
       },
     });
     return doc ? this.toDocState(doc) : null;
@@ -79,7 +79,7 @@ export class TypeOrmDocRepo {
     const qb = this.docRepo.createQueryBuilder("d");
 
     qb.where("d.status != :deletedStatus", {
-      deletedStatus: DocStatusType.DELETED,
+      deletedStatus: DocumentStatusType.DELETED,
     });
 
     if (command.query !== null) {
@@ -128,7 +128,7 @@ export class TypeOrmDocRepo {
     if (!doc) return;
 
     doc.active = false;
-    doc.status = DocStatusType.DRAFT;
+    doc.status = DocumentStatusType.DRAFT;
     await this.docRepo.save(doc);
   }
 
@@ -139,7 +139,7 @@ export class TypeOrmDocRepo {
     if (!doc) return;
 
     doc.active = true;
-    doc.status = DocStatusType.PUBLISHED;
+    doc.status = DocumentStatusType.PUBLISHED;
     await this.docRepo.save(doc);
   }
 
@@ -150,7 +150,7 @@ export class TypeOrmDocRepo {
 
     if (!doc) return;
 
-    doc.status = DocStatusType.DELETED;
+    doc.status = DocumentStatusType.DELETED;
     doc.active = false;
 
     await this.docRepo.save(doc);

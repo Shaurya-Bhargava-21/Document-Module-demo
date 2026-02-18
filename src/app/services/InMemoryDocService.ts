@@ -1,7 +1,7 @@
 import { DocumentErrors } from "../../contracts/errors/DocumentError.js";
 import type { IDocumentService } from "../../contracts/services/IDocumentService.js";
 import {
-  DocStatusType,
+  DocumentStatusType,
   type AddVersionCommand,
   type ArchiveDocumentCommand,
   type CreateDocumentCommand,
@@ -40,7 +40,7 @@ export class InMemoryDocService implements IDocumentService {
 
     if (!doc) throw DocumentErrors.NOT_FOUND();
     if (!doc.active) throw DocumentErrors.ARCHIVED();
-    if (doc.status === DocStatusType.DELETED) throw DocumentErrors.DELETED();
+    if (doc.status === DocumentStatusType.DELETED) throw DocumentErrors.DELETED();
 
     const versions = await this.repo.listVersions({
       documentId: command.documentId,

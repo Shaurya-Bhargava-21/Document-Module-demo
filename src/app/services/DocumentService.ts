@@ -10,7 +10,7 @@ import {
   type DocumentVersionState,
   type ListVersionCommand,
   type ArchiveDocumentCommand,
-  DocStatusType,
+  DocumentStatusType,
   type SoftDeleteDocumentCommand,
   type UnArchiveDocumentCommand,
 } from "../../contracts/states/document.js";
@@ -64,7 +64,7 @@ export class DocumentService implements IDocumentService {
     command: SearchDocumentCommand,
   ): Promise<DocumentState[]> {
     const validatedCommand = SearchDocumentCommandSchema.parse(command);
-    if (validatedCommand.status === DocStatusType.DELETED) {
+    if (validatedCommand.status === DocumentStatusType.DELETED) {
       throw DocumentErrors.DELETED();
     }
     return this.repo.search(validatedCommand as SearchDocumentCommand);
@@ -84,7 +84,7 @@ export class DocumentService implements IDocumentService {
     if (!doc.active) {
       throw DocumentErrors.ARCHIVED();
     }
-    if (doc.status === DocStatusType.DELETED) {
+    if (doc.status === DocumentStatusType.DELETED) {
       throw DocumentErrors.DELETED();
     }
     const versions = await this.repo.listVersions({
@@ -136,7 +136,7 @@ export class DocumentService implements IDocumentService {
     await this.documentProducer.documentArchived({
       ...doc,
       active: false,
-      status: DocStatusType.DRAFT,
+      status: DocumentStatusType.DRAFT,
     });
   }
 
@@ -160,7 +160,7 @@ export class DocumentService implements IDocumentService {
     await this.documentProducer.documentUnArchived({
       ...doc,
       active: true,
-      status: DocStatusType.PUBLISHED,
+      status: DocumentStatusType.PUBLISHED,
     });
   }
 
@@ -178,7 +178,7 @@ export class DocumentService implements IDocumentService {
     await this.documentProducer.documentDeleted({
       ...doc,
       active: false,
-      status: DocStatusType.DELETED,
+      status: DocumentStatusType.DELETED,
     });
   }
 }
