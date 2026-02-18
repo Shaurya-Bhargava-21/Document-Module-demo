@@ -92,7 +92,7 @@ export class InMemoryDocRepo {
     doc.updatedAt = new Date();
   }
 
-  async unarchive(command:UnArchiveDocumentCommand):Promise<void>{
+  async unarchive(command: UnArchiveDocumentCommand): Promise<void> {
     const doc = this.documents.find((d) => d.id === command.documentId);
     if (!doc) return;
 

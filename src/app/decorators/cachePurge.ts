@@ -16,13 +16,17 @@ export function cachePurge(prefixes: string[]) {
             });
             cursor = reply.cursor;
             const keys = reply.keys;
-  
+
             if (keys.length > 0) {
               await redisClient.del(keys);
             }
           } while (cursor !== "0");
         } catch (err) {
-          console.error(`\nCache purge failed for prefix ${prefix}:`,err,"\n");
+          console.error(
+            `\nCache purge failed for prefix ${prefix}:`,
+            err,
+            "\n",
+          );
         }
       }
 

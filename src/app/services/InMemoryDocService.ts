@@ -72,7 +72,7 @@ export class InMemoryDocService implements IDocumentService {
 
   async unarchiveDocument(command: UnArchiveDocumentCommand): Promise<void> {
     const doc = await this.repo.getById({
-      id:command.documentId
+      id: command.documentId,
     });
     if (!doc) throw DocumentErrors.NOT_FOUND();
     await this.repo.unarchive(command);

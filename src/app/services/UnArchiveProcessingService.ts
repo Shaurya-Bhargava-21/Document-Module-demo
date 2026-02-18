@@ -2,7 +2,9 @@ import type { DocumentState } from "../../contracts/states/document.js";
 
 export class UnArchiveProcessingService {
   async process(document: DocumentState): Promise<void> {
-    console.log(`\n[UnArchiveProcessingService] Processing unArchived document:`);
+    console.log(
+      `\n[UnArchiveProcessingService] Processing unArchived document:`,
+    );
     console.log(`  id: ${document.id}`);
     console.log(`  title: ${document.title}`);
     console.log(`  type: ${document.type}`);

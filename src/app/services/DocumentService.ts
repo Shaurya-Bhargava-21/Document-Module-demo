@@ -101,7 +101,7 @@ export class DocumentService implements IDocumentService {
       version: nextVersion,
     });
 
-    await this.documentProducer.versionAdded(newVersion)
+    await this.documentProducer.versionAdded(newVersion);
 
     return newVersion;
   }

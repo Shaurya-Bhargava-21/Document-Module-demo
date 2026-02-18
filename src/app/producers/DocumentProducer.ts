@@ -52,9 +52,9 @@ export class DocumentProducer {
         },
       ],
     });
-     console.log(
-       `\nMessage sent to to topic ${DOCUMENT_ARCHIVED_TOPIC} for version ${document.id}\n`,
-     );
+    console.log(
+      `\nMessage sent to to topic ${DOCUMENT_ARCHIVED_TOPIC} for version ${document.id}\n`,
+    );
   }
 
   async documentUnArchived(document: DocumentState): Promise<void> {
@@ -67,21 +67,21 @@ export class DocumentProducer {
         },
       ],
     });
-     console.log(
-       `\nMessage sent to to topic ${DOCUMENT_UNARCHIVED_TOPIC} for version ${document.id}\n`,
-     );
+    console.log(
+      `\nMessage sent to to topic ${DOCUMENT_UNARCHIVED_TOPIC} for version ${document.id}\n`,
+    );
   }
 
-  async documentDeleted(document:DocumentState):Promise<void>{
+  async documentDeleted(document: DocumentState): Promise<void> {
     await producer.send({
-        topic:DOCUMENT_DELETED_TOPIC,
-        messages:[
-            {
-                key:document.id,
-                value:JSON.stringify(document)
-            }
-        ]
-    })
+      topic: DOCUMENT_DELETED_TOPIC,
+      messages: [
+        {
+          key: document.id,
+          value: JSON.stringify(document),
+        },
+      ],
+    });
     console.log(
       `\nMessage sent to to topic ${DOCUMENT_DELETED_TOPIC} for version ${document.id}\n`,
     );

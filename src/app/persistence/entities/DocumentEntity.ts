@@ -1,4 +1,11 @@
-import { CreateDateColumn, Entity,Column ,PrimaryGeneratedColumn, UpdateDateColumn, OneToMany } from "typeorm";
+import {
+  CreateDateColumn,
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  OneToMany,
+} from "typeorm";
 
 import { DocumentVersionEntity } from "./DocumentVersionEntity.js";
 import { DocStatusType, DocType } from "../../../contracts/states/document.js";
@@ -14,10 +21,14 @@ export class DocumentEntity {
   @Column({ type: "enum", enum: DocType })
   type: DocType;
 
-  @Column({ type: "enum", enum: DocStatusType , default:DocStatusType.PUBLISHED})
+  @Column({
+    type: "enum",
+    enum: DocStatusType,
+    default: DocStatusType.PUBLISHED,
+  })
   status: DocStatusType;
 
-  @Column({type:'boolean',default:true})
+  @Column({ type: "boolean", default: true })
   active: boolean;
 
   @CreateDateColumn()

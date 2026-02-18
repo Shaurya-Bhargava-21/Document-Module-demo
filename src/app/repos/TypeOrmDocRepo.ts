@@ -90,10 +90,10 @@ export class TypeOrmDocRepo {
       });
     }
 
-    if(command.status){
-      qb.andWhere("d.status = :status",{
-        status:command.status
-      })
+    if (command.status) {
+      qb.andWhere("d.status = :status", {
+        status: command.status,
+      });
     }
 
     if (command.active !== undefined) {
@@ -128,7 +128,7 @@ export class TypeOrmDocRepo {
     await this.docRepo.save(doc);
   }
 
-  async unarchive(command:UnArchiveDocumentCommand):Promise<void>{
+  async unarchive(command: UnArchiveDocumentCommand): Promise<void> {
     const doc = await this.docRepo.findOne({
       where: { id: command.documentId },
     });

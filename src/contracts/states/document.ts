@@ -7,7 +7,7 @@ export enum DocType {
 export enum DocStatusType {
   DRAFT = "DRAFT",
   PUBLISHED = "PUBLISHED",
-  DELETED = "DELETED"
+  DELETED = "DELETED",
 }
 
 export interface DocumentState {
@@ -18,26 +18,28 @@ export interface DocumentState {
   active: boolean;
   createdAt: Date;
   updatedAt: Date;
-  versions?:DocumentVersionState[];
+  versions?: DocumentVersionState[];
 }
 
-export interface DocumentVersionState{
-  id:string;
-  documentId:string;
-  version:number;
-  content:string;
-  createdAt:Date;
+export interface DocumentVersionState {
+  id: string;
+  documentId: string;
+  version: number;
+  content: string;
+  createdAt: Date;
 }
 
 export interface CreateDocumentCommand {
   title: string;
   type: DocType;
 }
-export interface GetDocumentCommand{ // to fetch one specific document by id
-  id:string;
+export interface GetDocumentCommand {
+  // to fetch one specific document by id
+  id: string;
 }
 
-export interface SearchDocumentCommand { // to find many documents
+export interface SearchDocumentCommand {
+  // to find many documents
   query?: string; // search by title (partial match)
   type?: DocType; // filter by document type
   status?: DocStatusType; // filter by document status
@@ -65,13 +67,13 @@ export interface ArchiveDocumentCommand {
   documentId: string;
 }
 
-export interface UnArchiveDocumentCommand{
-  documentId:string;
+export interface UnArchiveDocumentCommand {
+  documentId: string;
 }
 
 export interface IServiceError {
   code: string;
-  statusCode:number;
+  statusCode: number;
   message: string;
   details?: unknown;
 }
@@ -84,5 +86,5 @@ export interface UpdateDocumentCommand {
 }
 
 export interface SoftDeleteDocumentCommand {
-  documentId:string;
+  documentId: string;
 }

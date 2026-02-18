@@ -4,25 +4,25 @@ import { documentRoutes } from "./routes/documentRoutes.js";
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import {
-    jsonSchemaTransform,
+  jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
   type ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import {connectRedis} from './redis.js'
+import { connectRedis } from "./redis.js";
 import { connectKafka } from "./kafka.js";
 import { DocumentListener } from "../app/listeners/DocumentListener.js";
 import { VersionListener } from "../app/listeners/VersionListener.js";
 
 const fastify = Fastify({
-    logger:true
+  logger: true,
 }).withTypeProvider<ZodTypeProvider>();
 
 // Set the validator and serializer compilers
 fastify.setValidatorCompiler(validatorCompiler);
 fastify.setSerializerCompiler(serializerCompiler);
 
-fastify.setErrorHandler((error:FastifyError, request, reply) => {
+fastify.setErrorHandler((error: FastifyError, request, reply) => {
   const statusCode = error.statusCode ?? 500;
   reply.code(statusCode).send({
     statusCode,
@@ -43,34 +43,33 @@ await fastify.register(fastifySwagger, {
 });
 
 await fastify.register(fastifySwaggerUi, {
-  routePrefix: "/docs", 
+  routePrefix: "/docs",
 });
 
-fastify.register(documentRoutes,{prefix:"/documents"})
+fastify.register(documentRoutes, { prefix: "/documents" });
 
-async function start(){
-    try{
-      await AppDataSource.initialize();
-      console.log("Database connected");
+async function start() {
+  try {
+    await AppDataSource.initialize();
+    console.log("Database connected");
 
-      await connectRedis();
-      await connectKafka();
+    await connectRedis();
+    await connectKafka();
 
-      const documentListener = new DocumentListener();
-      await documentListener.start();
-      console.log("Kafka document listener started");
+    const documentListener = new DocumentListener();
+    await documentListener.start();
+    console.log("Kafka document listener started");
 
-      const versionListener = new VersionListener();
-      await versionListener.start();
-      console.log("Kafka version listener started");
+    const versionListener = new VersionListener();
+    await versionListener.start();
+    console.log("Kafka version listener started");
 
-      await fastify.listen({ port: 4000 });
-      console.log("server running on port 4000");
-    }
-    catch(err){
-        fastify.log.error(err);
-        process.exit(1)
-    }
+    await fastify.listen({ port: 4000 });
+    console.log("server running on port 4000");
+  } catch (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
 }
 
-start()
+start();

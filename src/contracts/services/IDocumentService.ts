@@ -15,11 +15,9 @@ export interface IDocumentService {
   createDocument(command: CreateDocumentCommand): Promise<DocumentState>;
   getDocument(command: GetDocumentCommand): Promise<DocumentState>;
   searchDocument(command: SearchDocumentCommand): Promise<DocumentState[]>;
-  addVersion(command:AddVersionCommand):Promise<DocumentVersionState>;
-  listVersion(command:ListVersionCommand):Promise<DocumentVersionState[]>;
-  archiveDocument(command:ArchiveDocumentCommand):Promise<void>;
-  unarchiveDocument(command:UnArchiveDocumentCommand):Promise<void>;
-  softDeleteDocument(command:SoftDeleteDocumentCommand):Promise<void>;
+  addVersion(command: AddVersionCommand): Promise<DocumentVersionState>;
+  listVersion(command: ListVersionCommand): Promise<DocumentVersionState[]>;
+  archiveDocument(command: ArchiveDocumentCommand): Promise<void>;
+  unarchiveDocument(command: UnArchiveDocumentCommand): Promise<void>;
+  softDeleteDocument(command: SoftDeleteDocumentCommand): Promise<void>;
 }
-
-
