@@ -18,7 +18,7 @@ export interface DocumentState {
   active: boolean;
   createdAt: Date;
   updatedAt: Date;
-  versions?: DocumentVersionState[];
+  versions: DocumentVersionState[] | null;
 }
 
 export interface DocumentVersionState {
@@ -40,10 +40,10 @@ export interface GetDocumentCommand {
 
 export interface SearchDocumentCommand {
   // to find many documents
-  query?: string; // search by title (partial match)
-  type?: DocType; // filter by document type
-  status?: DocStatusType; // filter by document status
-  active?: boolean; // filter active / inactive documents
+  query: string | null; // search by title (partial match)
+  type: DocType | null; // filter by document type
+  status: DocStatusType | null; // filter by document status
+  active: boolean | null; // filter active / inactive documents
   limit: number; // max number of documents to return
   offset: number; // starting index
 }
@@ -80,9 +80,9 @@ export interface IServiceError {
 
 export interface UpdateDocumentCommand {
   documentId: string; // which document to update
-  title?: string; // optional, update only if provided
-  status?: DocStatusType;
-  active?: boolean;
+  title: string | null; // optional, update only if provided
+  status: DocStatusType | null;
+  active: boolean | null;
 }
 
 export interface SoftDeleteDocumentCommand {

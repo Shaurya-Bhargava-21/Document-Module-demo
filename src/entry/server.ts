@@ -55,7 +55,10 @@ async function start() {
 
     await connectRedis();
     await connectKafka();
-
+    
+    await fastify.listen({ port: 4000 });
+    console.log("server running on port 4000");
+    
     const documentListener = new DocumentListener();
     await documentListener.start();
     console.log("Kafka document listener started");
@@ -64,8 +67,6 @@ async function start() {
     await versionListener.start();
     console.log("Kafka version listener started");
 
-    await fastify.listen({ port: 4000 });
-    console.log("server running on port 4000");
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

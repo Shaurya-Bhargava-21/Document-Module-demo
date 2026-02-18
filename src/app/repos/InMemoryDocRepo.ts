@@ -21,6 +21,19 @@ export class InMemoryDocRepo {
     return crypto.randomUUID();
   }
 
+  private toDocState(doc: DocumentState): DocumentState {
+    return {
+      id: doc.id,
+      title: doc.title,
+      type: doc.type,
+      status: doc.status,
+      active: doc.active,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+      versions: null,
+    };
+  }
+
   async create(command: CreateDocumentCommand): Promise<DocumentState> {
     const now = new Date();
 
@@ -32,6 +45,7 @@ export class InMemoryDocRepo {
       active: true,
       createdAt: now,
       updatedAt: now,
+      versions: null,
     };
 
     this.documents.push(doc);
@@ -42,8 +56,9 @@ export class InMemoryDocRepo {
     const doc = this.documents.find(
       (d) => d.id === command.id && d.status !== DocStatusType.DELETED,
     );
+    if (!doc) return null;
 
-    return doc ?? null;
+    return this.toDocState(doc);
   }
 
   async search(command: SearchDocumentCommand): Promise<DocumentState[]> {
@@ -51,21 +66,20 @@ export class InMemoryDocRepo {
       (d) => d.status !== DocStatusType.DELETED,
     );
 
-    if (command.query) {
-      result = result.filter((d) =>
-        d.title.toLowerCase().includes(command.query!.toLowerCase()),
-      );
+    if (command.query !== null) {
+      const q = command.query.toLowerCase();
+      result = result.filter((d) => d.title.toLowerCase().includes(q));
     }
 
-    if (command.active !== undefined) {
+    if (command.active !== null) {
       result = result.filter((d) => d.active === command.active);
     }
 
-    if (command.type) {
+    if (command.type !== null) {
       result = result.filter((d) => d.type === command.type);
     }
 
-    if (command.status) {
+    if (command.status !== null) {
       result = result.filter((d) => d.status === command.status);
     }
 
@@ -76,9 +90,9 @@ export class InMemoryDocRepo {
     const doc = this.documents.find((d) => d.id === command.documentId);
     if (!doc) return;
 
-    if (command.title !== undefined) doc.title = command.title;
-    if (command.status !== undefined) doc.status = command.status;
-    if (command.active !== undefined) doc.active = command.active;
+    if (command.title !== null) doc.title = command.title;
+    if (command.status !== null) doc.status = command.status;
+    if (command.active !== null) doc.active = command.active;
 
     doc.updatedAt = new Date();
   }

@@ -1,8 +1,22 @@
 import { DocumentService } from "../app/services/DocumentService.js";
-import { DocType } from "../contracts/states/document.js";
+import { DocType, type SearchDocumentCommand } from "../contracts/states/document.js";
 import { InMemoryDocService } from "../app/services/InMemoryDocService.js";
 import type { IDocumentService } from "../contracts/services/IDocumentService.js";
 import { AppDataSource } from "../app/persistence/data-source.js";
+
+function buildSearchCommand(
+  input: Partial<SearchDocumentCommand>,
+): SearchDocumentCommand {
+  return {
+    query: null,
+    active: null,
+    type: null,
+    status: null,
+    limit: 10,
+    offset: 0,
+    ...input,
+  };
+}
 
 async function main() {
   await AppDataSource.initialize();
@@ -30,11 +44,12 @@ async function main() {
 
   // Test 3: Search Document
   console.log("\n3. Testing searchDocument\n");
-  const searchResults = await documentService.searchDocument({
-    query: "Test",
-    limit: 10,
-    offset: 0,
-  });
+  const searchResults = await documentService.searchDocument(
+    buildSearchCommand({
+      query: "Test",
+    }),
+  );
+
   console.log("Search completed. Found:", searchResults.length, "documents");
   console.log("Results:", searchResults);
 
@@ -116,11 +131,12 @@ async function main() {
 
   // Test 12: Verify deleted document not in search
   console.log("\n12. Verifying deleted document not available in search\n");
-  const searchAfterDelete = await documentService.searchDocument({
-    query: "Delete",
-    limit: 10,
-    offset: 0,
-  });
+  const searchAfterDelete = await documentService.searchDocument(
+    buildSearchCommand({
+      query: "Delete",
+    }),
+  );
+
   const foundDeleted = searchAfterDelete.find((d) => d.id === doc2.id);
   if (foundDeleted) {
     console.log("ERROR: Deleted document found in search");

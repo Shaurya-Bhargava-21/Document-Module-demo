@@ -37,6 +37,10 @@ export class TypeOrmDocRepo {
       active: entity.active,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      versions:
+        entity.versions === undefined
+          ? null 
+          : entity.versions.map((v) => this.toVersionState(v)),
     };
   }
 
@@ -78,25 +82,25 @@ export class TypeOrmDocRepo {
       deletedStatus: DocStatusType.DELETED,
     });
 
-    if (command.query) {
+    if (command.query !== null) {
       qb.andWhere("d.title ILIKE :q", {
         q: `%${command.query}%`,
       });
     }
 
-    if (command.type) {
+    if (command.type !== null) {
       qb.andWhere("d.type = :type", {
         type: command.type,
       });
     }
 
-    if (command.status) {
+    if (command.status !== null) {
       qb.andWhere("d.status = :status", {
         status: command.status,
       });
     }
 
-    if (command.active !== undefined) {
+    if (command.active !== null) {
       qb.andWhere("d.active = :active", {
         active: command.active,
       });
@@ -110,9 +114,9 @@ export class TypeOrmDocRepo {
 
   async update(command: UpdateDocumentCommand): Promise<void> {
     const updateData: Partial<DocumentEntity> = {};
-    if (command.title !== undefined) updateData.title = command.title;
-    if (command.status !== undefined) updateData.status = command.status;
-    if (command.active !== undefined) updateData.active = command.active;
+    if (command.title !== null) updateData.title = command.title;
+    if (command.status !== null) updateData.status = command.status;
+    if (command.active !== null) updateData.active = command.active;
 
     await this.docRepo.update(command.documentId, updateData);
   }

@@ -24,23 +24,26 @@ export const GetDocumentCommandSchema = z.object({
 });
 
 export const SearchDocumentCommandSchema = z.object({
-  query: z.string().max(100).optional(),
+  query: z.string().max(100).nullable().default(null),
   type: z
     .enum(docTypeValues, {
       error: `Invalid document type. Valid types are: ${Object.values(DocType).join(", ")}`,
     })
-    .optional(),
+    .nullable()
+    .default(null),
   status: z
     .enum(docStatusValues, {
       error: `Invalid status. Valid statuses are: ${Object.values(DocStatusType).join(", ")}`,
     })
-    .optional(),
+    .nullable()
+    .default(null),
   active: z
     .union([
       z.boolean(),
       z.enum(["true", "false"]).transform((v) => v === "true"),
     ])
-    .optional(),
+    .nullable()
+    .default(null),
   limit: z.coerce
     .number()
     .int()
@@ -89,19 +92,21 @@ export const UpdateDocumentCommandSchema = z
       .min(1, "title cannot be empty")
       .max(200, "title must be less than 200 characters")
       .trim()
-      .optional(),
+      .nullable()
+      .default(null),
     status: z
       .enum(docStatusValues, {
         error: `Invalid status. Valid statuses are: ${Object.values(DocStatusType).join(", ")}`,
       })
-      .optional(),
-    active: z.boolean().optional(),
+      .nullable()
+      .default(null),
+    active: z.boolean().nullable().default(null),
   })
   .refine(
     (data) =>
-      data.title !== undefined ||
-      data.status !== undefined ||
-      data.active !== undefined,
+      data.title !== null ||
+      data.status !== null ||
+      data.active !== null,
     {
       message: "At least one field (title, status, or active) must be provided",
     },
