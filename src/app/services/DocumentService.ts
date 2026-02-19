@@ -81,12 +81,14 @@ export class DocumentService implements IDocumentService {
       throw DocumentErrors.NOT_FOUND();
     }
 
-    if (!doc.active) {
-      throw DocumentErrors.ARCHIVED();
-    }
     if (doc.status === DocumentStatusType.DELETED) {
       throw DocumentErrors.DELETED();
     }
+    
+    if (!doc.active) {
+      throw DocumentErrors.ARCHIVED();
+    }
+    
     const versions = await this.repo.listVersions({
       documentId: validatedCommand.documentId,
     });
