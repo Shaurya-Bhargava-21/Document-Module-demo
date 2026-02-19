@@ -1,6 +1,6 @@
 # Document Management API
 
-A REST API for managing documents and their versions, built with **Fastify**, **TypeScript**, **TypeORM**, **PostgreSQL**, and **Redis**.
+A REST API for managing documents and their versions, built with **Fastify**, **TypeScript**, **TypeORM**, **PostgreSQL**, **Redis**, and **Kafka**.
 
 ---
 
@@ -10,6 +10,7 @@ A REST API for managing documents and their versions, built with **Fastify**, **
 - **Framework** — Fastify with Zod type provider
 - **Database** — PostgreSQL via TypeORM
 - **Cache** — Redis
+- **Message Broker** — Apache Kafka
 - **Validation** — Zod
 - **API Docs** — Swagger UI (`/docs`)
 
@@ -20,39 +21,54 @@ A REST API for managing documents and their versions, built with **Fastify**, **
 ```
 src/
 ├── app/
+│   ├── controllers/
+│   │   └── DocumentController.ts       # Handles HTTP req/res, delegates to service
 │   ├── decorators/
-│   │   ├── cacheGet.ts          # Caches method results in Redis
-│   │   ├── cachePurge.ts        # Invalidates Redis cache keys on mutation
-│   │   └── performanceTracker.ts # Logs method execution time
+│   │   ├── cacheGet.ts                 # Caches method results in Redis
+│   │   ├── cachePurge.ts               # Invalidates Redis cache keys on mutation
+│   │   └── performanceTracker.ts       # Logs method execution time
+│   ├── listeners/
+│   │   ├── DocumentListener.ts         # Kafka consumer for document events
+│   │   └── VersionListener.ts          # Kafka consumer for version events
 │   ├── persistence/
 │   │   ├── entities/
 │   │   │   ├── DocumentEntity.ts
 │   │   │   └── DocumentVersionEntity.ts
 │   │   ├── migrations/
-│   │   │   └── 1770198074143-InitialSchema.ts
+│   │   │   ├── 1770198074143-InitialSchema.ts
+│   │   │   └── 1771397554241-AddDocumentVersionForeignKey.ts
 │   │   └── data-source.ts
+│   ├── producers/
+│   │   ├── DocumentProducer.ts         # Publishes events to Kafka topics
+│   │   └── topics.ts                   # Kafka topic name constants (enum)
 │   ├── repos/
-│   │   ├── InMemoryDocRepo.ts   # In-memory repo for testing/local dev
-│   │   └── TypeOrmDocRepo.ts    # Real Postgres repo
-│   ├── services/
-│   │   ├── DocumentService.ts   # Real service (Postgres + Redis)
-│   │   └── InMemoryDocService.ts # In-memory service for testing
-│   └── validators/
-│       └── DocumentValidators.ts
+│   │   ├── InMemoryDocRepo.ts          # In-memory repo for local dev/testing
+│   │   └── TypeOrmDocRepo.ts           # Real PostgreSQL repo via TypeORM
+│   └── services/
+│       ├── ArchiveProcessingService.ts
+│       ├── DeleteProcessingService.ts
+│       ├── DocumentProcessingService.ts
+│       ├── DocumentService.ts          # Real service (PostgreSQL + Redis + Kafka)
+│       ├── InMemoryDocService.ts       # In-memory service for local dev/testing
+│       ├── UnArchiveProcessingService.ts
+│       └── VersionProcessingService.ts
 ├── contracts/
 │   ├── errors/
 │   │   ├── DocumentError.ts
 │   │   └── ServiceError.ts
 │   ├── services/
-│   │   └── IDocumentService.ts
-│   └── states/
-│       └── document.ts          # All types, interfaces, and enums
+│   │   └── IDocumentService.ts         # Interface implemented by both services
+│   ├── states/
+│   │   └── document.ts                 # All types, interfaces, and enums
+│   └── validators/
+│       └── DocumentValidators.ts       # Zod schemas for all commands
 └── entry/
     ├── routes/
-    │   └── documents.ts
+    │   └── documentRoutes.ts
     ├── index.ts
-    ├── redis.ts
-    └── server.ts
+    ├── kafka.ts                        # Kafka client, producer, consumers
+    ├── redis.ts                        # Redis client
+    └── server.ts                       # App entry point, boots all services
 ```
 
 ---
@@ -60,8 +76,7 @@ src/
 ## Prerequisites
 
 - Node.js 18+
-- PostgreSQL
-- Redis
+- Docker and Docker Compose
 
 ---
 
@@ -79,30 +94,54 @@ Create a `.env` file in the root:
 
 ```env
 DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=yourpassword
-DB_NAME=documents_db
+DB_PORT=5433
+DB_USER=YourUser
+DB_PASSWORD=YourPassword
+DB_NAME=YourDbName
 
 REDIS_HOST=localhost
 REDIS_PORT=6379
+
+KAFKA_CLIENT_ID=document-service
+KAFKA_BROKER=localhost:9092
 ```
 
-### 3. Run migrations
+### 3. Start infrastructure
+
+```bash
+docker-compose up -d
+```
+
+This starts PostgreSQL, Redis, Kafka, Zookeeper, and their web UIs.
+
+### 4. Run migrations
 
 ```bash
 npm run migration:run
 ```
 
-### 4. Start the server
+### 5. Start the server
 
 ```bash
-npm run dev     # development
-npm run start   # production
+npm run dev     # development — runs index.ts via tsx + nodemon
+npm run start   # production — runs server.ts via tsx + nodemon
 ```
 
-Server runs on **http://localhost:4000**
+Server runs on **http://localhost:4000**  
 Swagger docs at **http://localhost:4000/docs**
+
+---
+
+## Infrastructure (Docker)
+
+| Service | Purpose | URL |
+|---------|---------|-----|
+| PostgreSQL | Primary database | `localhost:5433` |
+| Redis | Cache layer | `localhost:6379` |
+| RedisInsight | Redis web UI | `http://localhost:8001` |
+| Kafka | Message broker | `localhost:9092` |
+| Zookeeper | Kafka coordinator | `localhost:2181` |
+| Kafdrop | Kafka web UI | `http://localhost:9000` |
 
 ---
 
@@ -142,30 +181,12 @@ Created (PUBLISHED, active: true)
 
 **Status meanings:**
 - `PUBLISHED` — document is active and accessible
-- `DRAFT` — document has been archived (not editable, not accessible)
-- `DELETED` — document is soft deleted and will not appear in any queries
-
----
-
-## Caching
-
-Redis caching is applied via decorators on the service layer.
-
-| Method | Cache TTL | Invalidated by |
-|--------|-----------|----------------|
-| `getDocument` | 300s | `addVersion`, `archiveDocument`, `unarchiveDocument`, `softDeleteDocument` |
-| `searchDocument` | 120s | `createDocument`, `archiveDocument`, `unarchiveDocument`, `softDeleteDocument` |
-| `listVersion` | 300s | `addVersion`, `archiveDocument`, `unarchiveDocument`, `softDeleteDocument` |
-
-Cache keys follow the format: `ClassName:methodName:[args]`
-
-If Redis is unavailable, the app falls back to hitting the database directly — no requests will fail due to cache errors.
+- `DRAFT` — document is archived (not editable)
+- `DELETED` — document is soft deleted, excluded from all queries (data preserved in DB)
 
 ---
 
 ## Document Types
-
-Supported file types:
 
 - `PDF`
 - `JPG`
@@ -174,15 +195,47 @@ Supported file types:
 
 ---
 
+## Kafka Events
+
+Every mutation publishes an event to Kafka for async processing.
+
+| Topic | Published when | Consumer group |
+|-------|---------------|----------------|
+| `document.created` | Document is created | `document-processor` |
+| `document.archived` | Document is archived | `document-processor` |
+| `document.unarchived` | Document is unarchived | `document-processor` |
+| `document.deleted` | Document is soft deleted | `document-processor` |
+| `version.added` | A new version is added | `version-processor` |
+
+Processing services currently log event details to the console. They are the extension point for future side effects — search indexing, notifications, webhooks, analytics, etc.
+
+---
+
+## Caching
+
+Redis caching is applied via TypeScript decorators on the service layer.
+
+| Method | TTL | Invalidated by |
+|--------|-----|----------------|
+| `getDocument` | 300s | `addVersion`, `archiveDocument`, `unarchiveDocument`, `softDeleteDocument` |
+| `searchDocument` | 120s | `createDocument`, `archiveDocument`, `unarchiveDocument`, `softDeleteDocument` |
+| `listVersion` | 300s | `addVersion`, `archiveDocument`, `unarchiveDocument`, `softDeleteDocument` |
+
+Cache keys follow the format: `ClassName:methodName:[args]`
+
+If Redis is unavailable, the app falls back to the database — no requests fail due to cache errors.
+
+---
+
 ## Switching to In-Memory Mode
 
-For local development without a database or Redis, swap the service in `entry/routes/documents.ts`:
+For local development without Docker, swap the service in `entry/routes/documentRoutes.ts`:
 
 ```typescript
-// Use this for local dev / testing
+// local dev / testing — no DB, Redis, or Kafka needed
 service = new InMemoryDocService();
 
-// Use this for real Postgres + Redis
+// production — PostgreSQL + Redis + Kafka
 service = new DocumentService();
 ```
 
@@ -191,12 +244,18 @@ service = new DocumentService();
 ## Running Migrations
 
 ```bash
+# Create a blank migration
+npm run migration:create -- src/app/persistence/migrations/MigrationName
+
+# Generate a migration based on entity changes
+npm run migration:generate -- src/app/persistence/migrations/MigrationName
+
 # Run all pending migrations
 npm run migration:run
 
 # Revert the last migration
 npm run migration:revert
 
-# Generate a new migration based on entity changes
-npm run migration:generate --name=MigrationName
+# Show migration status
+npm run migration:show
 ```
