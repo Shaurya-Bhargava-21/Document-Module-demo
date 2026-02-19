@@ -1,24 +1,19 @@
 import { consumer } from "../../entry/kafka.js";
-import {
-  DOCUMENT_ARCHIVED_TOPIC,
-  DOCUMENT_CREATED_TOPIC,
-  DOCUMENT_DELETED_TOPIC,
-  DOCUMENT_UNARCHIVED_TOPIC,
-} from "../producers/DocumentProducer.js";
 import { DocumentProcessingService } from "../services/DocumentProcessingService.js";
 import type { DocumentState } from "../../contracts/states/document.js";
 import { ArchiveProcessingService } from "../services/ArchiveProcessingService.js";
 import { DeleteProcessingService } from "../services/DeleteProcessingService.js";
 import { UnArchiveProcessingService } from "../services/UnArchiveProcessingService.js";
+import { Topics } from "../producers/topics.js";
 
 export class DocumentListener {
-  private docuementProcessingService: DocumentProcessingService;
+  private documentProcessingService: DocumentProcessingService;
   private archiveProcessingService: ArchiveProcessingService;
   private deleteProcessingService: DeleteProcessingService;
   private unArchiveProcessingService: UnArchiveProcessingService;
 
   constructor() {
-    this.docuementProcessingService = new DocumentProcessingService();
+    this.documentProcessingService = new DocumentProcessingService();
     this.archiveProcessingService = new ArchiveProcessingService();
     this.deleteProcessingService = new DeleteProcessingService();
     this.unArchiveProcessingService = new UnArchiveProcessingService();
@@ -29,22 +24,22 @@ export class DocumentListener {
     console.log("Kafka consumer connected");
 
     await consumer.subscribe({
-      topic: DOCUMENT_CREATED_TOPIC,
+      topic: Topics.DOCUMENT_CREATED,
       fromBeginning: false,
     });
 
     await consumer.subscribe({
-      topic: DOCUMENT_ARCHIVED_TOPIC,
+      topic: Topics.DOCUMENT_ARCHIVED,
       fromBeginning: false,
     });
 
     await consumer.subscribe({
-      topic: DOCUMENT_DELETED_TOPIC,
+      topic: Topics.DOCUMENT_UNARCHIVED,
       fromBeginning: false,
     });
 
     await consumer.subscribe({
-      topic: DOCUMENT_UNARCHIVED_TOPIC,
+      topic: Topics.DOCUMENT_DELETED,
       fromBeginning: false,
     });
 
@@ -63,13 +58,13 @@ export class DocumentListener {
           // parse message back into DocumentState
           const data: DocumentState = JSON.parse(message.value.toString());
 
-          if (topic === DOCUMENT_CREATED_TOPIC) {
-            await this.docuementProcessingService.process(data);
-          } else if (topic === DOCUMENT_ARCHIVED_TOPIC) {
+          if (topic === Topics.DOCUMENT_CREATED) {
+            await this.documentProcessingService.process(data);
+          } else if (topic === Topics.DOCUMENT_ARCHIVED) {
             await this.archiveProcessingService.process(data);
-          } else if (topic === DOCUMENT_UNARCHIVED_TOPIC) {
+          } else if (topic === Topics.DOCUMENT_UNARCHIVED) {
             await this.unArchiveProcessingService.process(data);
-          } else if (topic === DOCUMENT_DELETED_TOPIC) {
+          } else if (topic === Topics.DOCUMENT_DELETED) {
             await this.deleteProcessingService.process(data);
           }
         } catch (err) {

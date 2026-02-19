@@ -9,6 +9,9 @@ export const producer = kafka.producer();
 export const consumer = kafka.consumer({
   groupId: "document-processor",
 });
+export const versionConsumer = kafka.consumer({
+  groupId:"version-processor"
+})
 
 export const connectKafka = async () => {
   await producer.connect();

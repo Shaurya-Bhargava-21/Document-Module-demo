@@ -1,8 +1,7 @@
 import type { DocumentVersionState } from "../../contracts/states/document.js";
-import { kafka } from "../../entry/kafka.js";
-import { VERSION_ADDED_TOPIC } from "../producers/DocumentProducer.js";
+import { versionConsumer } from "../../entry/kafka.js";
+import { Topics } from "../producers/topics.js";
 import { VersionProcessingService } from "../services/VersionProcessingService.js";
-
 export class VersionListener {
   private processingService: VersionProcessingService;
 
@@ -11,16 +10,12 @@ export class VersionListener {
   }
 
   async start(): Promise<void> {
-    //creating a seperate consumer for version events
-    const versionConsumer = kafka.consumer({
-      groupId: "version-processor",
-    });
 
     await versionConsumer.connect();
     console.log("kafka version consumer connected");
 
     await versionConsumer.subscribe({
-      topic: VERSION_ADDED_TOPIC,
+      topic: Topics.VERSION_ADDED,
       fromBeginning: false,
     });
 

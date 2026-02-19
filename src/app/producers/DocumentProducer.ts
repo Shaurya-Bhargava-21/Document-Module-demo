@@ -3,87 +3,43 @@ import type {
   DocumentState,
   DocumentVersionState,
 } from "../../contracts/states/document.js";
-
-export const DOCUMENT_CREATED_TOPIC = "document.created";
-export const VERSION_ADDED_TOPIC = "version.added";
-export const DOCUMENT_ARCHIVED_TOPIC = "document.archived";
-export const DOCUMENT_UNARCHIVED_TOPIC = "document.unarchived";
-export const DOCUMENT_DELETED_TOPIC = "document.deleted";
+import { Topics } from "./topics.js";
 
 export class DocumentProducer {
-  async documentCreated(document: DocumentState): Promise<void> {
+  private async publish(
+    topic: string,
+    key: string,
+    payload: unknown,
+  ): Promise<void> {
     await producer.send({
-      topic: DOCUMENT_CREATED_TOPIC,
+      topic: topic,
       messages: [
         {
-          key: document.id,
-          value: JSON.stringify(document),
+          key: key,
+          value: JSON.stringify(payload),
         },
       ],
     });
-
-    console.log(
-      `\nMessage sent to topic ${DOCUMENT_CREATED_TOPIC} for document ${document.id}\n`,
-    );
+    console.log(`[DocumentProducer] Published to ${topic} | key: ${key}`);
   }
 
-  async versionAdded(version: DocumentVersionState): Promise<void> {
-    await producer.send({
-      topic: VERSION_ADDED_TOPIC,
-      messages: [
-        {
-          key: version.id,
-          value: JSON.stringify(version),
-        },
-      ],
-    });
-    console.log(
-      `\nMessage sent to to topic ${VERSION_ADDED_TOPIC} for version ${version.id}\n`,
-    );
+  async documentCreated(document: DocumentState): Promise<void> {
+    await this.publish(Topics.DOCUMENT_CREATED, document.id, document);
   }
 
   async documentArchived(document: DocumentState): Promise<void> {
-    await producer.send({
-      topic: DOCUMENT_ARCHIVED_TOPIC,
-      messages: [
-        {
-          key: document.id,
-          value: JSON.stringify(document),
-        },
-      ],
-    });
-    console.log(
-      `\nMessage sent to to topic ${DOCUMENT_ARCHIVED_TOPIC} for version ${document.id}\n`,
-    );
+    await this.publish(Topics.DOCUMENT_ARCHIVED, document.id, document);
   }
 
   async documentUnArchived(document: DocumentState): Promise<void> {
-    await producer.send({
-      topic: DOCUMENT_UNARCHIVED_TOPIC,
-      messages: [
-        {
-          key: document.id,
-          value: JSON.stringify(document),
-        },
-      ],
-    });
-    console.log(
-      `\nMessage sent to to topic ${DOCUMENT_UNARCHIVED_TOPIC} for version ${document.id}\n`,
-    );
+    await this.publish(Topics.DOCUMENT_UNARCHIVED, document.id, document);
   }
 
   async documentDeleted(document: DocumentState): Promise<void> {
-    await producer.send({
-      topic: DOCUMENT_DELETED_TOPIC,
-      messages: [
-        {
-          key: document.id,
-          value: JSON.stringify(document),
-        },
-      ],
-    });
-    console.log(
-      `\nMessage sent to to topic ${DOCUMENT_DELETED_TOPIC} for version ${document.id}\n`,
-    );
+    await this.publish(Topics.DOCUMENT_DELETED, document.id, document);
+  }
+
+  async versionAdded(version: DocumentVersionState): Promise<void> {
+    await this.publish(Topics.VERSION_ADDED, version.id, version);
   }
 }

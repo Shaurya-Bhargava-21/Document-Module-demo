@@ -1,42 +1,46 @@
 import z from "zod";
-import { DocumentStatusType, DocumentType } from "../../contracts/states/document.js";
+import {
+  DocumentStatusType,
+  DocumentType,
+} from "../../contracts/states/document.js";
 
-const DocumentTypeValues = Object.values(DocumentType) as [DocumentType, ...DocumentType[]];
+const DocumentTypeValues = Object.values(DocumentType) as [
+  DocumentType,
+  ...DocumentType[],
+];
 const docStatusValues = Object.values(DocumentStatusType) as [
   DocumentStatusType,
   ...DocumentStatusType[],
 ];
 
-export const CreateDocumentCommandSchema = z.object({
-  title: z
-    .string()
-    .min(1, "title is required")
-    .max(200, "title must be less than 200 characters")
-    .trim(),
+const INVALID_DOCUMENT_ID_ERROR = "Invalid document ID format";
+const INVALID_DOCUMENT_TYPE_ERROR = `Invalid document type. Valid types are: ${Object.values(DocumentType).join(", ")}`;
+const INVALID_STATUS_ERROR = `Invalid status. Valid statuses are: ${Object.values(DocumentStatusType).join(", ")}`;
 
-  type: z.enum(DocumentTypeValues, {
-    error: `Invalid document type. Valid types are: ${Object.values(DocumentType).join(", ")}`,
-  }),
+const documentId = z.uuid({ message: INVALID_DOCUMENT_ID_ERROR });
+const documentType = z.enum(DocumentTypeValues, {
+  error: INVALID_DOCUMENT_TYPE_ERROR,
+});
+const documentStatus = z.enum(docStatusValues, { error: INVALID_STATUS_ERROR });
+const documentTitle = z
+  .string()
+  .min(1, "title is required")
+  .max(200, "title must be less than 200 characters")
+  .trim();
+
+export const CreateDocumentCommandSchema = z.object({
+  title: documentTitle,
+  type: documentType,
 });
 
 export const GetDocumentCommandSchema = z.object({
-  id: z.uuid({ message: "invalid document id format" }),
+  id: documentId,
 });
 
 export const SearchDocumentCommandSchema = z.object({
   query: z.string().max(100).nullable().default(null),
-  type: z
-    .enum(DocumentTypeValues, {
-      error: `Invalid document type. Valid types are: ${Object.values(DocumentType).join(", ")}`,
-    })
-    .nullable()
-    .default(null),
-  status: z
-    .enum(docStatusValues, {
-      error: `Invalid status. Valid statuses are: ${Object.values(DocumentStatusType).join(", ")}`,
-    })
-    .nullable()
-    .default(null),
+  type: documentType.nullable().default(null),
+  status: documentStatus.nullable().default(null),
   active: z
     .union([
       z.boolean(),
@@ -54,59 +58,28 @@ export const SearchDocumentCommandSchema = z.object({
 });
 
 export const AddVersionCommandSchema = z.object({
-  documentId: z.uuid({ message: "Invalid document ID format" }),
+  documentId,
   content: z
     .string()
     .min(1, "cannot be empty")
-    .max(50000, "content is too large (max 50,000 characters) "),
+    .max(50000, "content is too large (max 50,000 characters)"),
 });
 
-export const ListVersionCommandSchema = z.object({
-  documentId: z.uuid({
-    message: `Invalid document type. Valid types are: ${Object.values(DocumentType).join(", ")}`,
-  }),
-});
-
-export const ArchiveDocumentCommandSchema = z.object({
-  documentId: z.uuid({
-    message: `Invalid document type. Valid types are: ${Object.values(DocumentType).join(", ")}`,
-  }),
-});
-export const UnArchiveDocumentCommandSchema = z.object({
-  documentId: z.uuid({
-    message: `Invalid document type. Valid types are: ${Object.values(DocumentType).join(", ")}`,
-  }),
-});
-
-export const SoftDeleteDocumentCommandSchema = z.object({
-  documentId: z.uuid({
-    message: `Invalid document type. Valid types are: ${Object.values(DocumentType).join(", ")}`,
-  }),
-});
+export const ListVersionCommandSchema = z.object({ documentId });
+export const ArchiveDocumentCommandSchema = z.object({ documentId });
+export const UnArchiveDocumentCommandSchema = z.object({ documentId });
+export const SoftDeleteDocumentCommandSchema = z.object({ documentId });
 
 export const UpdateDocumentCommandSchema = z
   .object({
-    documentId: z.uuid({ message: "Invalid Document Id format" }),
-    title: z
-      .string()
-      .min(1, "title cannot be empty")
-      .max(200, "title must be less than 200 characters")
-      .trim()
-      .nullable()
-      .default(null),
-    status: z
-      .enum(docStatusValues, {
-        error: `Invalid status. Valid statuses are: ${Object.values(DocumentStatusType).join(", ")}`,
-      })
-      .nullable()
-      .default(null),
+    documentId,
+    title: documentTitle.nullable().default(null),
+    status: documentStatus.nullable().default(null),
     active: z.boolean().nullable().default(null),
   })
   .refine(
     (data) =>
-      data.title !== null ||
-      data.status !== null ||
-      data.active !== null,
+      data.title !== null || data.status !== null || data.active !== null,
     {
       message: "At least one field (title, status, or active) must be provided",
     },
