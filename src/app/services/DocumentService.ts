@@ -36,6 +36,29 @@ export class DocumentService implements IDocumentService {
   private repo: TypeOrmDocRepo;
   private documentProducer: DocumentProducer;
 
+  private isUrlMatchingType(url: string, type: string): boolean {
+    const lowerUrl = url.toLowerCase().split("?")[0]!; // remove query params
+    const t = type.toUpperCase();
+
+    if (t === "JPG") {
+      return lowerUrl.endsWith(".jpg") || lowerUrl.endsWith(".jpeg");
+    }
+
+    if (t === "PNG") {
+      return lowerUrl.endsWith(".png");
+    }
+
+    if (t === "PDF") {
+      return lowerUrl.endsWith(".pdf");
+    }
+
+    if (t === "TXT") {
+      return lowerUrl.endsWith(".txt");
+    }
+
+    return false;
+  }
+
   constructor() {
     this.repo = new TypeOrmDocRepo();
     this.documentProducer = new DocumentProducer();
@@ -44,6 +67,24 @@ export class DocumentService implements IDocumentService {
   @cachePurge(["searchDocument"])
   async createDocument(command: CreateDocumentCommand): Promise<DocumentState> {
     const validatedCommand = CreateDocumentCommandSchema.parse(command);
+    if (validatedCommand.url?.startsWith("data:")) {
+      throw DocumentErrors.INVALID_FILE_TYPE({
+        reason: "Data URLs are not supported",
+      });
+    }
+    if (validatedCommand.url) {
+      const ok = this.isUrlMatchingType(
+        validatedCommand.url,
+        validatedCommand.type,
+      );
+
+      if (!ok) {
+        throw DocumentErrors.INVALID_FILE_TYPE({
+          expectedType: validatedCommand.type,
+          url: validatedCommand.url,
+        });
+      }
+    }
     const doc = await this.repo.create(validatedCommand);
     await this.documentProducer.documentCreated(doc);
     return doc;
@@ -84,11 +125,11 @@ export class DocumentService implements IDocumentService {
     if (doc.status === DocumentStatusType.DELETED) {
       throw DocumentErrors.DELETED();
     }
-    
+
     if (!doc.active) {
       throw DocumentErrors.ARCHIVED();
     }
-    
+
     const versions = await this.repo.listVersions({
       documentId: validatedCommand.documentId,
     });

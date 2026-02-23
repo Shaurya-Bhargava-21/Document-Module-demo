@@ -15,6 +15,7 @@ export interface DocumentState {
   title: string;
   type: DocumentType;
   status: DocumentStatusType;
+  url:string;
   active: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -32,6 +33,7 @@ export interface DocumentVersionState {
 export interface CreateDocumentCommand {
   title: string;
   type: DocumentType;
+  url:string;
 }
 export interface GetDocumentCommand {
   // to fetch one specific document by id

@@ -23,4 +23,11 @@ export const DocumentErrors = {
       "Document is already active",
       400,
     ),
+  INVALID_FILE_TYPE: (details?: unknown) =>
+    new ServiceError(
+      "INVALID_FILE_TYPE",
+      "File type does not match document type",
+      400,
+      details,
+    ),
 };

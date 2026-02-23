@@ -27,10 +27,11 @@ const documentTitle = z
   .min(1, "title is required")
   .max(200, "title must be less than 200 characters")
   .trim();
-
+const documentUrl = z.url({ message: "Invalid URL format" });
 export const CreateDocumentCommandSchema = z.object({
   title: documentTitle,
   type: documentType,
+  url: documentUrl,
 });
 
 export const GetDocumentCommandSchema = z.object({

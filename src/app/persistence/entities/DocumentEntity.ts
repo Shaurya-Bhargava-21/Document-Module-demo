@@ -28,6 +28,9 @@ export class DocumentEntity {
   })
   status: DocumentStatusType;
 
+  @Column("text")
+  url: string;
+
   @Column({ type: "boolean", default: true })
   active: boolean;
 

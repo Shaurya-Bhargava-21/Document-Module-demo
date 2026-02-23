@@ -34,6 +34,7 @@ export class TypeOrmDocRepo {
       title: entity.title,
       type: entity.type,
       status: entity.status,
+      url:entity.url,
       active: entity.active,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
@@ -59,6 +60,7 @@ export class TypeOrmDocRepo {
     const entity = this.docRepo.create({
       title: command.title,
       type: command.type,
+      url:command.url,
     });
 
     const saved = await this.docRepo.save(entity);
