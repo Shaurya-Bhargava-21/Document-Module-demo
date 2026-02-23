@@ -34,6 +34,7 @@ async function main() {
   const doc = await documentService.createDocument({
     title: "Test Document",
     type: DocumentType.PDF,
+    url: "https://picsum.photos/1600/1300.jpg",
   });
   console.log("Document created:", doc.id);
 
@@ -107,6 +108,7 @@ async function main() {
   const doc2 = await documentService.createDocument({
     title: "Document to Delete",
     type: DocumentType.TXT,
+    url: "https://picsum.photos/1500/1500.jpg",
   });
   console.log("Document created:", doc2.id);
 

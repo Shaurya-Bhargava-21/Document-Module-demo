@@ -27,10 +27,10 @@ export class InMemoryDocRepo {
       title: doc.title,
       type: doc.type,
       status: doc.status,
+      url:doc.url,
       active: doc.active,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
-      versions: null,
     };
   }
 
@@ -42,10 +42,10 @@ export class InMemoryDocRepo {
       title: command.title,
       type: command.type,
       status: DocumentStatusType.PUBLISHED,
+      url:command.url,
       active: true,
       createdAt: now,
       updatedAt: now,
-      versions: null,
     };
 
     this.documents.push(doc);
@@ -127,10 +127,19 @@ export class InMemoryDocRepo {
   async addVersion(
     command: AddVersionRepoCommand,
   ): Promise<DocumentVersionState> {
+    const versionsForDoc = this.versions.filter(
+      (v) => v.documentId === command.documentId,
+    );
+
+    const nextVersion =
+      versionsForDoc.length === 0
+        ? 1
+        : Math.max(...versionsForDoc.map((v) => v.version)) + 1;
+
     const version: DocumentVersionState = {
       id: this.generateId(),
       documentId: command.documentId,
-      version: command.version,
+      version: nextVersion,
       content: command.content,
       createdAt: new Date(),
     };

@@ -34,14 +34,10 @@ export class TypeOrmDocRepo {
       title: entity.title,
       type: entity.type,
       status: entity.status,
-      url:entity.url,
+      url: entity.url,
       active: entity.active,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
-      versions:
-        entity.versions === undefined
-          ? null 
-          : entity.versions.map((v) => this.toVersionState(v)),
     };
   }
 
@@ -57,14 +53,28 @@ export class TypeOrmDocRepo {
 
   // Document methods
   async create(command: CreateDocumentCommand): Promise<DocumentState> {
-    const entity = this.docRepo.create({
-      title: command.title,
-      type: command.type,
-      url:command.url,
-    });
+    return AppDataSource.transaction(async (manager) => {
+      const docRepo = manager.getRepository(DocumentEntity);
+      const versionRepo = manager.getRepository(DocumentVersionEntity);
 
-    const saved = await this.docRepo.save(entity);
-    return this.toDocState(saved);
+      const doc = docRepo.create({
+        title: command.title,
+        type: command.type,
+        url: command.url,
+      });
+
+      const savedDoc = await docRepo.save(doc);
+
+      const version = versionRepo.create({
+        version: 1,
+        content: command.title,
+        document: savedDoc,
+      });
+
+      await versionRepo.save(version);
+
+      return this.toDocState(savedDoc);
+    });
   }
 
   async getById(command: GetDocumentCommand): Promise<DocumentState | null> {
@@ -162,23 +172,49 @@ export class TypeOrmDocRepo {
   async addVersion(
     command: AddVersionRepoCommand,
   ): Promise<DocumentVersionState> {
-    const entity = this.versionRepo.create({
-      version: command.version,
-      content: command.content,
-      document: { id: command.documentId } as any,
-    });
+    return AppDataSource.transaction(async (manager) => {
+      const versionRepo = manager.getRepository(DocumentVersionEntity);
+      const docRepo = manager.getRepository(DocumentEntity);
 
-    const saved = await this.versionRepo.save(entity);
-
-    const fullVersionWithDocument: DocumentVersionEntity | null =
-      await this.versionRepo.findOne({
-        where: { id: saved.id },
-        relations: ["document"],
+      const doc = await docRepo.findOne({
+        where: { id: command.documentId },
+        lock: { mode: "pessimistic_write" },
       });
-    if (!fullVersionWithDocument)
-      throw DocumentErrors.NOT_FOUND({ documentId: command.documentId });
 
-    return this.toVersionState(fullVersionWithDocument);
+      if (!doc) {
+        throw DocumentErrors.NOT_FOUND({ documentId: command.documentId });
+      }
+
+      if (doc.status === DocumentStatusType.DELETED) {
+        throw DocumentErrors.DELETED();
+      }
+
+      if (!doc.active) {
+        throw DocumentErrors.ARCHIVED();
+      }
+
+      const lastVersion = await versionRepo
+        .createQueryBuilder("v")
+        .where("v.documentId = :documentId", {
+          documentId: command.documentId,
+        })
+        .orderBy("v.version", "DESC")
+        .getOne();
+
+      const nextVersion = lastVersion ? Number(lastVersion.version) + 1 : 1;
+
+      const entity = versionRepo.create({
+        version: nextVersion,
+        content: command.content,
+        document: doc,
+      });
+
+      const saved = await versionRepo.save(entity);
+
+      saved.document = doc;
+
+      return this.toVersionState(saved);
+    });
   }
 
   async listVersions(

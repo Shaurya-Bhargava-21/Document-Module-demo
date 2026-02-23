@@ -42,19 +42,9 @@ export class InMemoryDocService implements IDocumentService {
     if (!doc.active) throw DocumentErrors.ARCHIVED();
     if (doc.status === DocumentStatusType.DELETED) throw DocumentErrors.DELETED();
 
-    const versions = await this.repo.listVersions({
-      documentId: command.documentId,
-    });
-
-    const nextVersion =
-      versions.length === 0
-        ? 1
-        : Math.max(...versions.map((v) => v.version)) + 1;
-
     return this.repo.addVersion({
       documentId: command.documentId,
       content: command.content,
-      version: nextVersion,
     });
   }
 

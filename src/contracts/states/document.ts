@@ -19,7 +19,6 @@ export interface DocumentState {
   active: boolean;
   createdAt: Date;
   updatedAt: Date;
-  versions: DocumentVersionState[] | null;
 }
 
 export interface DocumentVersionState {
@@ -57,7 +56,6 @@ export interface AddVersionCommand {
 
 export interface AddVersionRepoCommand {
   documentId: string;
-  version: number;
   content: string;
 }
 

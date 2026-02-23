@@ -14,7 +14,6 @@ import {
   type SoftDeleteDocumentCommand,
   type UnArchiveDocumentCommand,
 } from "../../contracts/states/document.js";
-import { redisClient } from "../../entry/redis.js";
 import { cacheGet } from "../decorators/cacheGet.js";
 import { cachePurge } from "../decorators/cachePurge.js";
 import { performanceTracker } from "../decorators/performanceTracker.js";
@@ -115,33 +114,9 @@ export class DocumentService implements IDocumentService {
   async addVersion(command: AddVersionCommand): Promise<DocumentVersionState> {
     const validatedCommand = AddVersionCommandSchema.parse(command);
 
-    const doc = await this.repo.getById({
-      id: validatedCommand.documentId,
-    });
-    if (!doc) {
-      throw DocumentErrors.NOT_FOUND();
-    }
-
-    if (doc.status === DocumentStatusType.DELETED) {
-      throw DocumentErrors.DELETED();
-    }
-
-    if (!doc.active) {
-      throw DocumentErrors.ARCHIVED();
-    }
-
-    const versions = await this.repo.listVersions({
-      documentId: validatedCommand.documentId,
-    });
-    const nextVersion =
-      versions.length === 0
-        ? 1
-        : Math.max(...versions.map((v) => v.version)) + 1;
-
     const newVersion = await this.repo.addVersion({
       documentId: validatedCommand.documentId,
       content: validatedCommand.content,
-      version: nextVersion,
     });
 
     await this.documentProducer.versionAdded(newVersion);
