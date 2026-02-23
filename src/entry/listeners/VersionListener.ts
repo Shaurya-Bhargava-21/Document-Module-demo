@@ -1,7 +1,7 @@
 import type { DocumentVersionState } from "../../contracts/states/document.js";
 import { versionConsumer } from "../../entry/kafka.js";
-import { Topics } from "../producers/topics.js";
-import { VersionProcessingService } from "../services/VersionProcessingService.js";
+import { Topics } from "../../app/producers/topics.js";
+import { VersionProcessingService } from "../../app/services/VersionProcessingService.js";
 export class VersionListener {
   private processingService: VersionProcessingService;
 

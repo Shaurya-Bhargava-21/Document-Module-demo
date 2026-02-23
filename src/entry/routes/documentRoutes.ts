@@ -22,35 +22,58 @@ import {
   SoftDeleteDocumentCommandSchema,
   UnArchiveDocumentCommandSchema,
 } from "../../contracts/validators/DocumentValidators.js";
-import { DocumentController } from "../../app/controllers/DocumentController.js";
 
 export const documentRoutes: FastifyPluginAsync = async (app) => {
   let service: IDocumentService = new DocumentService();
-  // service = new InMemoryDocService();
-  const controller = new DocumentController(service);
+  //   service = new InMemoryDocService();
 
-  // create document
-  app.post<{ Body: CreateDocumentCommand }>(
+  //create document
+  app.post<{
+    Body: CreateDocumentCommand;
+  }>(
     "/",
-    { schema: { body: CreateDocumentCommandSchema } },
-    (req, reply) => controller.create(req, reply),
+    {
+      schema: {
+        body: CreateDocumentCommandSchema,
+      },
+    },
+    async (req, reply) => {
+      const doc = await service.createDocument(req.body);
+      reply.code(201).send(doc);
+    },
   );
 
-  // search documents
-  app.get<{ Querystring: SearchDocumentCommand }>(
+  //search document
+  app.get<{
+    Querystring: SearchDocumentCommand;
+  }>(
     "/",
-    { schema: { querystring: SearchDocumentCommandSchema } },
-    (req, reply) => controller.search(req, reply),
+    {
+      schema: {
+        querystring: SearchDocumentCommandSchema,
+      },
+    },
+    async (req) => {
+      return service.searchDocument(req.query);
+    },
   );
 
-  // get document by id
-  app.get<{ Params: GetDocumentCommand }>(
+  //get document
+  app.get<{
+    Params: GetDocumentCommand;
+  }>(
     "/:id",
-    { schema: { params: GetDocumentCommandSchema } },
-    (req, reply) => controller.getById(req, reply),
+    {
+      schema: {
+        params: GetDocumentCommandSchema,
+      },
+    },
+    async (req) => {
+      return service.getDocument(req.params);
+    },
   );
 
-  // add version
+  //add version
   app.post<{
     Params: GetDocumentCommand;
     Body: Pick<AddVersionCommand, "content">;
@@ -62,34 +85,76 @@ export const documentRoutes: FastifyPluginAsync = async (app) => {
         body: AddVersionCommandSchema.pick({ content: true }),
       },
     },
-    (req, reply) => controller.addVersion(req, reply),
+    async (req, reply) => {
+      const version = await service.addVersion({
+        documentId: req.params.id,
+        content: req.body.content,
+      });
+
+      reply.code(201).send(version);
+    },
   );
 
-  // list versions
-  app.get<{ Params: ListVersionCommand }>(
+  //list versions
+  app.get<{
+    Params: ListVersionCommand;
+  }>(
     "/:documentId/versions",
-    { schema: { params: ListVersionCommandSchema } },
-    (req, reply) => controller.listVersions(req, reply),
+    {
+      schema: {
+        params: ListVersionCommandSchema,
+      },
+    },
+    async (req) => {
+      return service.listVersion(req.params);
+    },
   );
 
-  // archive document
-  app.patch<{ Params: ArchiveDocumentCommand }>(
+  //archive document
+  app.patch<{
+    Params: ArchiveDocumentCommand;
+  }>(
     "/:documentId/archive",
-    { schema: { params: ArchiveDocumentCommandSchema } },
-    (req, reply) => controller.archive(req, reply),
+    {
+      schema: {
+        params: ArchiveDocumentCommandSchema,
+      },
+    },
+    async (req) => {
+      await service.archiveDocument(req.params);
+      return { message: "Document Archived" };
+    },
   );
 
-  // unarchive document
-  app.patch<{ Params: UnArchiveDocumentCommand }>(
+  //unarchive document
+  app.patch<{
+    Params: UnArchiveDocumentCommand;
+  }>(
     "/:documentId/unarchive",
-    { schema: { params: UnArchiveDocumentCommandSchema } },
-    (req, reply) => controller.unarchive(req, reply),
+    {
+      schema: {
+        params: UnArchiveDocumentCommandSchema,
+      },
+    },
+    async (req) => {
+      await service.unarchiveDocument(req.params);
+      return { message: "Document Unarchived" };
+    },
   );
 
-  // soft delete document
-  app.delete<{ Params: SoftDeleteDocumentCommand }>(
+  //soft delete document
+  app.delete<{
+    Params: SoftDeleteDocumentCommand;
+  }>(
     "/:documentId",
-    { schema: { params: SoftDeleteDocumentCommandSchema } },
-    (req, reply) => controller.softDelete(req, reply),
+    {
+      schema: {
+        params: SoftDeleteDocumentCommandSchema,
+      },
+    },
+    async (req) => {
+      await service.softDeleteDocument(req.params);
+      return { message: "Document deleted" };
+    },
   );
 };

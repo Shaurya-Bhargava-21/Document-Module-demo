@@ -1,10 +1,11 @@
-import { consumer } from "../../entry/kafka.js";
-import { DocumentProcessingService } from "../services/DocumentProcessingService.js";
+import { Topics } from "../../app/producers/topics.js";
+import { ArchiveProcessingService } from "../../app/services/ArchiveProcessingService.js";
+import { DeleteProcessingService } from "../../app/services/DeleteProcessingService.js";
+import { DocumentProcessingService } from "../../app/services/DocumentProcessingService.js";
+import { UnArchiveProcessingService } from "../../app/services/UnArchiveProcessingService.js";
 import type { DocumentState } from "../../contracts/states/document.js";
-import { ArchiveProcessingService } from "../services/ArchiveProcessingService.js";
-import { DeleteProcessingService } from "../services/DeleteProcessingService.js";
-import { UnArchiveProcessingService } from "../services/UnArchiveProcessingService.js";
-import { Topics } from "../producers/topics.js";
+import { consumer } from "../../entry/kafka.js";
+
 
 export class DocumentListener {
   private documentProcessingService: DocumentProcessingService;

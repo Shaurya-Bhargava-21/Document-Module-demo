@@ -11,8 +11,9 @@ import {
 } from "fastify-type-provider-zod";
 import { connectRedis } from "./redis.js";
 import { connectKafka } from "./kafka.js";
-import { DocumentListener } from "../app/listeners/DocumentListener.js";
-import { VersionListener } from "../app/listeners/VersionListener.js";
+import { DocumentListener } from "./listeners/DocumentListener.js";
+import { VersionListener } from "./listeners/VersionListener.js";
+
 
 const fastify = Fastify({
   logger: true,
