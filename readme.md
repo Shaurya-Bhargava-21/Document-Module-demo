@@ -20,16 +20,11 @@ A REST API for managing documents and their versions, built with **Fastify**, **
 
 ```
 src/
-├── app/
-│   ├── controllers/
-│   │   └── DocumentController.ts       # Handles HTTP req/res, delegates to service
+├── app/  
 │   ├── decorators/
 │   │   ├── cacheGet.ts                 # Caches method results in Redis
 │   │   ├── cachePurge.ts               # Invalidates Redis cache keys on mutation
 │   │   └── performanceTracker.ts       # Logs method execution time
-│   ├── listeners/
-│   │   ├── DocumentListener.ts         # Kafka consumer for document events
-│   │   └── VersionListener.ts          # Kafka consumer for version events
 │   ├── persistence/
 │   │   ├── entities/
 │   │   │   ├── DocumentEntity.ts
@@ -63,6 +58,9 @@ src/
 │   └── validators/
 │       └── DocumentValidators.ts       # Zod schemas for all commands
 └── entry/
+    ├── listeners/
+    │   ├── DocumentListener.ts         # Kafka consumer for document events
+    │   └── VersionListener.ts          # Kafka consumer for version events
     ├── routes/
     │   └── documentRoutes.ts
     ├── index.ts
